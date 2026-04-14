@@ -1,7 +1,7 @@
 [**🇺🇸 Read in English**](README.md)
 
 <p align="center">
-  <a href="https://soulintent.github.io/Probability-calculator/" target="_blank">
+  <a href="https://soulintent.github.io/probability-calculator/" target="_blank">
     <img src="https://img.shields.io/badge/Открыть_калькулятор-38bdf8?style=for-the-badge" alt="Открыть калькулятор">
   </a>
 </p>
