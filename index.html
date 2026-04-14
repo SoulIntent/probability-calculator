@@ -1220,8 +1220,8 @@
           </div>
           <div>
             ${showScrollButtons ? `
-              <button class="scroll-group-btn scroll-top-btn" data-group-idx="${gIdx}" title="${t('scroll_to_top')}" style="display: ${isCollapsed ? 'none' : ''};">⬆️</button>
-              <button class="scroll-group-btn scroll-bottom-btn" data-group-idx="${gIdx}" title="${t('scroll_to_bottom')}" style="display: ${isCollapsed ? 'none' : ''};">⬇️</button>
+              <button class="scroll-group-btn scroll-top-btn" data-group-idx="${gIdx}" title="${t('scroll_to_top')}" style="display: ${isCollapsed ? 'none' : ''};">↑</button>
+              <button class="scroll-group-btn scroll-bottom-btn" data-group-idx="${gIdx}" title="${t('scroll_to_bottom')}" style="display: ${isCollapsed ? 'none' : ''};">↓</button>
             ` : ''}
             <button class="collapse-btn" data-group-id="${group.id}">${isCollapsed ? t('expand') : t('collapse')}</button>
           </div>
@@ -1245,8 +1245,8 @@
           </div>
           ${showScrollButtons ? `
             <div class="bottom-scroll-buttons">
-              <button class="scroll-group-btn scroll-top-btn" data-group-idx="${gIdx}" title="${t('scroll_to_top')}">⬆️</button>
-              <button class="scroll-group-btn scroll-bottom-btn" data-group-idx="${gIdx}" title="${t('scroll_to_bottom')}">⬇️</button>
+              <button class="scroll-group-btn scroll-top-btn" data-group-idx="${gIdx}" title="${t('scroll_to_top')}">↑</button>
+              <button class="scroll-group-btn scroll-bottom-btn" data-group-idx="${gIdx}" title="${t('scroll_to_bottom')}">↓</button>
             </div>
           ` : ''}
         </div>
@@ -1348,13 +1348,13 @@
         topBtn.className = 'scroll-group-btn scroll-top-btn';
         topBtn.dataset.groupIdx = gIdx;
         topBtn.title = t('scroll_to_top');
-        topBtn.textContent = '⬆️';
+        topBtn.textContent = '↑';
         topBtn.style.display = isCollapsed ? 'none' : '';
         const bottomBtn = document.createElement('button');
         bottomBtn.className = 'scroll-group-btn scroll-bottom-btn';
         bottomBtn.dataset.groupIdx = gIdx;
         bottomBtn.title = t('scroll_to_bottom');
-        bottomBtn.textContent = '⬇️';
+        bottomBtn.textContent = '↓';
         bottomBtn.style.display = isCollapsed ? 'none' : '';
         headerDiv.insertBefore(topBtn, headerDiv.firstChild);
         headerDiv.insertBefore(bottomBtn, headerDiv.firstChild);
@@ -1364,8 +1364,8 @@
         const newBottomDiv = document.createElement('div');
         newBottomDiv.className = 'bottom-scroll-buttons';
         newBottomDiv.innerHTML = `
-          <button class="scroll-group-btn scroll-top-btn" data-group-idx="${gIdx}" title="${t('scroll_to_top')}">⬆️</button>
-          <button class="scroll-group-btn scroll-bottom-btn" data-group-idx="${gIdx}" title="${t('scroll_to_bottom')}">⬇️</button>
+          <button class="scroll-group-btn scroll-top-btn" data-group-idx="${gIdx}" title="${t('scroll_to_top')}">↑</button>
+          <button class="scroll-group-btn scroll-bottom-btn" data-group-idx="${gIdx}" title="${t('scroll_to_bottom')}">↓</button>
         `;
         actionsDiv.insertAdjacentElement('afterend', newBottomDiv);
       }
