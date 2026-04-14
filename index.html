@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Probability calculator</title>
   <style>
-    /* Colors and settings used everywhere in the app */
     :root {
       --bg-body: #0b1220;
       --bg-card: #111827b8;
@@ -33,7 +32,6 @@
       --error-color: #ef4444;
     }
 
-    /* Light mode colors */
     .light-mode {
       --bg-body: #f8fafc;
       --bg-card: var(--light-card-bg);
@@ -47,10 +45,8 @@
       --table-hover-bg: #0ea5e914;
     }
 
-    /* Reset margins and make sure everything uses border-box */
     * { box-sizing: border-box; margin: 0; }
 
-    /* Main page background and text color */
     body {
       margin: 0;
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -59,7 +55,6 @@
       min-height: 100vh;
     }
 
-    /* Background glow circles */
     body::before {
       content: "";
       position: fixed;
@@ -71,14 +66,12 @@
       z-index: -1;
     }
 
-    /* Same glows but for light mode */
     .light-mode body::before {
       background: radial-gradient(circle at 20% 10%, var(--gradient-light-1), transparent 40%),
                   radial-gradient(circle at 80% 30%, var(--gradient-light-2), transparent 45%),
                   radial-gradient(circle at 50% 90%, var(--gradient-light-3), transparent 45%);
     }
 
-    /* Main content wrapper */
     .container {
       max-width: 1100px;
       margin: 0 auto;
@@ -86,7 +79,6 @@
       width: 100%;
     }
 
-    /* Big title at the top with gradient animation */
     h1 {
       text-align: center;
       font-size: 28px;
@@ -103,14 +95,12 @@
       border-radius: 16px;
     }
 
-    /* Title color animation */
     @keyframes gradientShift {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
 
-    /* Card style used for all sections */
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border-light);
@@ -121,14 +111,12 @@
       box-shadow: 0 10px 30px #00000059, inset 0 1px 0 #ffffff08;
     }
 
-    /* Card style in light mode */
     .light-mode .card {
       backdrop-filter: none;
       background: var(--light-card-bg);
       box-shadow: 0 10px 30px var(--light-card-shadow);
     }
 
-    /* Small labels above inputs */
     .label {
       font-size: 13px;
       color: var(--text-secondary);
@@ -136,7 +124,6 @@
       font-weight: 600;
     }
 
-    /* All input fields */
     input, select, textarea {
       width: 100%;
       padding: 10px 12px;
@@ -149,14 +136,11 @@
       font-weight: 500;
     }
 
-    /* Focus style for inputs */
     input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #38bdf81f; }
     .light-mode input:focus { box-shadow: 0 0 0 3px #0ea5e926; }
 
-    /* Red border when winners > participants */
     input.invalid { border-color: var(--error-color); box-shadow: 0 0 0 3px #ef44441f; }
 
-    /* Regular buttons */
     button {
       background: #38bdf826;
       color: #7dd3fc;
@@ -168,7 +152,6 @@
       font-weight: 500;
     }
 
-    /* Buttons in light mode */
     .light-mode button {
       background: #0ea5e91f;
       color: #0c4a6e;
@@ -178,7 +161,6 @@
     button:hover { background: #38bdf838; transform: translateY(-1px); }
     .light-mode button:hover { background: #0ea5e933; }
 
-    /* Theme and language buttons in header */
     .theme-btn, .lang-btn {
       background: #94a3b826;
       color: var(--text-primary);
@@ -194,7 +176,6 @@
       margin-left: 8px;
     }
 
-    /* Top-right header controls */
     .header-actions {
       position: absolute;
       top: 32px;
@@ -204,33 +185,42 @@
       gap: 8px;
     }
 
-    /* Utility flex row */
     .flex-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
-    /* Single event row */
     .event-row {
       display: flex;
       align-items: center;
       gap: 8px;
       margin-bottom: 10px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       position: relative;
       transition: transform 0.2s;
       touch-action: pan-y;
     }
 
-    /* Event name input takes more space */
     .event-name { flex: 1.5; min-width: 120px; }
-    /* Fixed width for number inputs */
+
     .event-number { width: 80px; }
 
-    /* Small label above participants/winners fields */
-    .number-label { font-size: 12px; color: var(--text-secondary); text-align: left; margin-bottom: 2px; }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
 
-    /* Container for win/lose/pending toggle buttons */
-    .status-btns { display: flex; gap: 4px; }
+    .number-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+      white-space: nowrap;
+    }
 
-    /* Win / Lose / Pending status buttons */
+    .status-btns {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
     .status-btn {
       padding: 4px 0;
       width: 36px;
@@ -239,16 +229,15 @@
       color: #cbd5e1;
       border: 1px solid #475569;
       font-size: 16px;
+      height: 40px;
     }
 
     .light-mode .status-btn { background: #e2e8f0; color: #0f172a; border-color: #94a3b8; }
 
-    /* Active states for status buttons */
     .status-btn.active-win { background: #22c55e; color: white; border-color: #16a34a; }
     .status-btn.active-lose { background: #ef4444; color: white; border-color: #dc2626; }
     .status-btn.active-pending { background: #fbbf24; color: #0f172a; border-color: #d97706; }
 
-    /* Display of event win probability */
     .chance-badge {
       min-width: 70px;
       text-align: right;
@@ -256,13 +245,12 @@
       color: var(--accent);
     }
 
-    /* Delete event button */
     .delete-event-btn {
       background: transparent;
       border: 1px solid var(--border-light);
       color: var(--text-secondary);
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 40px;
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -277,37 +265,44 @@
       border-color: #ef4444;
     }
 
-    /* Header of each group card */
     .group-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
+      flex-wrap: nowrap;
+      gap: 8px;
     }
 
-    /* Collapse/expand button */
+    .group-header > div:first-child {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: nowrap;
+    }
+
+    .group-header > div:last-child {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: nowrap;
+    }
+
     .collapse-btn {
       background: transparent;
       border: 1px solid var(--border-light);
       padding: 4px 12px;
+      white-space: nowrap;
     }
 
-    /* Statistics card at the bottom */
     .stats-card { margin-top: 24px; }
-    /* Profile selector dropdown area */
     .profile-selector { margin-bottom: 16px; }
-    /* Error message text */
     .error-message { color: #f87171; font-size: 13px; margin-top: 4px; }
-    /* Warning banner for excessive groups */
     .warning-banner { background: #fbbf2426; border-left: 4px solid #fbbf24; padding: 10px; border-radius: 8px; margin: 12px 0; }
-    /* Setup configuration section */
     .setup-section { margin-top: 16px; }
-    /* Row for configuring a single group in setup */
     .group-config-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-end; }
-    /* Utility to hide elements */
     .hidden { display: none !important; }
 
-    /* Footer text */
     .footer-note {
       margin-top: 24px;
       text-align: center;
@@ -321,13 +316,10 @@
       animation: gradientShift 10s ease infinite;
     }
 
-    /* List for top chances in global stats */
     .top-stats-list { list-style: none; padding: 0; margin: 8px 0; }
     .top-stats-list li { padding: 4px 0; border-bottom: 1px dashed var(--border-light); }
 
-    /* Export/import buttons container */
     .export-import { display: flex; gap: 6px; margin-left: auto; }
-    /* Collapsed group chance preview */
     .group-chance-collapsed {
       font-size: 14px;
       font-weight: 500;
@@ -335,21 +327,32 @@
       margin-top: 4px;
     }
 
-    /* Action buttons inside group card */
+    .group-next-chance-collapsed {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
+    .group-next-chance {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
     .group-actions {
       display: flex;
       gap: 8px;
       margin-top: 12px;
     }
 
-    /* Summary statistic text style */
     .summary-text {
       font-size: 14px;
       font-weight: 500;
       color: var(--text-primary);
     }
 
-    /* Label above group items count input */
     .event-config-label {
       font-size: 12px;
       color: var(--text-secondary);
@@ -357,7 +360,6 @@
       font-weight: 600;
     }
 
-    /* Mobile menu button */
     .mobile-menu-btn {
       display: none;
       background: #94a3b826;
@@ -366,14 +368,12 @@
       padding: 8px 16px;
     }
 
-    /* Actions menu for mobile (hidden by default) */
     .actions-menu {
       display: flex;
       gap: 8px;
       margin-left: auto;
     }
 
-    /* Drag handle for group reordering */
     .drag-handle {
       cursor: grab;
       font-size: 24px;
@@ -383,8 +383,18 @@
     }
     .drag-handle:active { cursor: grabbing; }
 
-    /* Make edit and delete group buttons same size as status buttons */
-    .edit-group-btn, .delete-group-btn {
+    .event-drag-handle {
+      cursor: grab;
+      font-size: 20px;
+      padding: 0 4px;
+      color: var(--text-secondary);
+      user-select: none;
+      display: flex;
+      align-items: center;
+    }
+    .event-drag-handle:active { cursor: grabbing; }
+
+    .edit-group-btn, .delete-group-btn, .group-stats-btn {
       width: 36px;
       height: 36px;
       padding: 0;
@@ -397,13 +407,12 @@
       color: var(--text-secondary);
       font-size: 18px;
     }
-    .edit-group-btn:hover, .delete-group-btn:hover {
+    .edit-group-btn:hover, .delete-group-btn:hover, .group-stats-btn:hover {
       background: #38bdf826;
       color: var(--accent);
       border-color: var(--accent);
     }
 
-    /* Scroll buttons inside group header */
     .scroll-group-btn {
       background: transparent;
       border: 1px solid var(--border-light);
@@ -412,10 +421,15 @@
       padding: 0;
       font-size: 18px;
       border-radius: 8px;
-      margin-left: 4px;
     }
 
-    /* Modal overlay for statistics */
+    .bottom-scroll-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      justify-content: flex-end;
+    }
+
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -471,39 +485,101 @@
     }
     .stats-item {
       display: flex;
-      justify-content: space-between;
-      padding: 4px 8px;
+      align-items: flex-start;
+      padding: 6px 8px;
       border-radius: 6px;
       background: var(--input-bg);
       margin-bottom: 4px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .stats-item-name {
+      flex: 1 1 180px;
+      font-weight: 500;
+      word-break: break-word;
+      min-width: 0;
+    }
+    .stats-item-numbers {
+      flex: 0 0 auto;
+      font-size: 0.9em;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .stats-item-probability {
+      flex: 0 0 70px;
+      text-align: right;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .stats-item.win-status .stats-item-name { color: #22c55e; }
+    .stats-item.lose-status .stats-item-name { color: #ef4444; }
+    .stats-item.pending-status .stats-item-name { color: #fbbf24; }
+    .light-mode .stats-item.win-status .stats-item-name { color: #16a34a; }
+    .light-mode .stats-item.lose-status .stats-item-name { color: #dc2626; }
+    .light-mode .stats-item.pending-status .stats-item-name { color: #d97706; }
+
+    .autocomplete-wrapper {
+      position: relative;
+      flex: 1.5;
+      min-width: 120px;
+    }
+    .autocomplete-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--input-bg);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 4px 12px #00000033;
+      margin-top: 4px;
+    }
+    .autocomplete-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-primary);
+    }
+    .autocomplete-item:last-child { border-bottom: none; }
+    .autocomplete-item:hover, .autocomplete-item.selected {
+      background: var(--accent);
+      color: #0b1220;
     }
 
-    /* Mobile layout fixes */
     @media (max-width: 768px) {
       .container { padding: 16px 12px; }
       .header-actions { top: 16px; right: 16px; }
-      .event-row { flex-direction: column; align-items: stretch; }
+      .event-row {
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      .event-name, .autocomplete-wrapper { flex: 1 1 100%; min-width: auto; }
       .event-number { width: 100%; }
+      .status-btns { justify-content: center; }
+      .delete-event-btn { margin-left: auto; }
       .actions-menu { display: none; flex-direction: column; position: absolute; background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 12px; padding: 12px; right: 16px; top: 60px; z-index: 200; }
       .actions-menu.show { display: flex; }
       .mobile-menu-btn { display: inline-flex; }
       .card.flex-row { flex-wrap: wrap; }
+      .group-header {
+        flex-wrap: wrap;
+      }
     }
   </style>
 </head>
 <body>
 <div class="container">
-  <!-- Title with gradient animation -->
   <h1 id="main-title" data-i18n="app_title">Probability calculator</h1>
   
-  <!-- Header controls: language toggle and theme switch -->
   <div class="header-actions">
     <button id="lang-en" class="lang-btn" aria-label="English">EN</button>
     <button id="lang-ru" class="lang-btn" aria-label="Русский">RU</button>
     <button id="theme-toggle" class="theme-btn" aria-label="Toggle theme">☀️</button>
   </div>
 
-  <!-- Setup view: profile management and group configuration -->
   <div id="setup-view">
     <div class="card">
       <div class="label" data-i18n="profile_section">Profile</div>
@@ -518,11 +594,9 @@
         <button id="import-profile-setup" data-i18n="import">Import</button>
         <button id="backup-all-btn" data-i18n="backup_all">Backup All</button>
         <button id="restore-backup-btn" data-i18n="restore_backup">Restore Backup</button>
-        <!-- Hidden file inputs for import/restore -->
         <input type="file" id="import-file-setup" accept=".json" style="display:none;">
         <input type="file" id="restore-backup-file" accept=".json" style="display:none;">
       </div>
-      <!-- New profile creation area (initially hidden) -->
       <div id="new-profile-area" class="hidden">
         <input type="text" id="new-profile-name" placeholder="Profile name" data-i18n-placeholder="profile_name_placeholder">
         <div class="flex-row" style="margin-top:8px;">
@@ -533,7 +607,6 @@
       </div>
     </div>
 
-    <!-- Group setup card (shown after profile selection/creation) -->
     <div id="groups-setup-card" class="card hidden">
       <div class="label" data-i18n="groups_setup">Event groups setup</div>
       <div class="setup-section">
@@ -542,16 +615,14 @@
           <input type="number" id="groups-count" min="1" value="1" style="width:100px;">
           <button id="apply-groups-count" data-i18n="apply">Apply</button>
         </div>
-        <!-- Warning shown if group count > 5 -->
         <div id="groups-count-warning" class="warning-banner hidden">
-          <span data-i18n="many_groups_warning">More than 5 groups may reduce readability & performance. Consider splitting it into multiple profiles.</span>
+          <span data-i18n="many_groups_warning">More than 5 groups may reduce readability &amp; performance. Consider splitting it into multiple profiles.</span>
           <div class="flex-row" style="margin-top:8px;">
             <button id="continue-anyway" data-i18n="continue_anyway">Continue anyway</button>
             <button id="cancel-to-count" data-i18n="cancel">Cancel</button>
           </div>
         </div>
       </div>
-      <!-- Container for per-group configuration rows -->
       <div id="groups-config-container" class="setup-section"></div>
       <div class="flex-row" style="justify-content: space-between; margin-top: 16px;">
         <button id="add-group-row" data-i18n="add_group">+ Add group</button>
@@ -561,50 +632,45 @@
     </div>
   </div>
 
-  <!-- Main calculator view (hidden until setup complete) -->
   <div id="calculator-view" class="hidden">
     <div class="card flex-row" style="justify-content: space-between;">
       <span data-i18n="current_profile">Profile:</span>
       <strong id="current-profile-name"></strong>
-      <!-- Mobile menu toggle button -->
       <button class="mobile-menu-btn" id="mobile-menu-toggle">☰</button>
-      <!-- Actions menu (desktop inline, mobile dropdown) -->
       <div class="actions-menu" id="actions-menu">
+        <button id="save-profile-calc" data-i18n="save">Save</button>
         <button id="export-profile-calc" data-i18n="export">Export</button>
         <button id="import-profile-calc" data-i18n="import">Import</button>
         <input type="file" id="import-file-calc" accept=".json" style="display:none;">
+        <button id="load-filter-btn" data-i18n="load_filter">Load Filter</button>
+        <input type="file" id="filter-file-input" accept=".json,.txt" style="display:none;">
+        <button id="clear-filter-btn" data-i18n="clear_filter">Clear Filter</button>
         <button id="reset-calculator-btn" data-i18n="reset">Reset</button>
         <button id="back-to-setup" data-i18n="back_to_setup">← Setup</button>
       </div>
     </div>
-    <!-- Button to add a new group directly in calculator -->
     <div style="margin-bottom: 16px;">
       <button id="add-group-calc" data-i18n="add_group_calc">+ Add Group</button>
     </div>
-    <!-- Container for all group cards -->
     <div id="groups-container"></div>
-    <!-- Global statistics card -->
     <div class="card stats-card">
       <div class="label" style="display: flex; justify-content: space-between; align-items: center;">
         <span data-i18n="summary_statistics">Summary statistics</span>
-        <button id="show-stats-modal-btn" data-i18n="stats_button">Stats</button>
+        <div style="display: flex; gap: 8px;">
+          <button id="show-stats-modal-btn" data-i18n="stats_button">Stats</button>
+          <button id="show-chance-modal-btn" data-i18n="chance_button">Chance</button>
+        </div>
       </div>
       <div id="global-stats"></div>
     </div>
   </div>
-  <!-- Footer -->
   <div class="footer-note">Made by Ch1cWolf<br>2026 ©</div>
-
-  <!-- Datalist for event name autocomplete -->
-  <datalist id="event-names-datalist"></datalist>
 </div>
 
 <script>
   (function(){
     "use strict";
 
-    /* ---------- Internationalization (i18n) ---------- */
-    /* Translations for English and Russian */
     const i18n = {
       en: {
         app_title: 'Probability calculator',
@@ -635,8 +701,7 @@
         current_profile: 'Profile:',
         back_to_setup: '← Setup',
         summary_statistics: 'Summary statistics',
-        overall_win_chance: 'Overall chance to win at least one:',
-        overall_lose_chance: 'Chance to lose all events:',
+        overall_expected_wins: 'Total expected wins:',
         total_wins: 'Total wins:',
         total_losses: 'Total losses:',
         pending_count: 'Pending:',
@@ -644,7 +709,7 @@
         event_name_placeholder: 'Event name',
         entries: 'Entries',
         winners: 'Winners',
-        group_chance_label: 'Next chance to win in this group:',
+        group_expected_label: 'Expected wins:',
         collapse: 'Collapse',
         expand: 'Expand',
         duplicate_group_name: 'Group name already exists (case‑insensitive)',
@@ -683,6 +748,21 @@
         scroll_to_top: 'Scroll to first event',
         scroll_to_bottom: 'Scroll to last event',
         drag_handle: 'Drag to reorder',
+        entries_short: 'Entries',
+        winners_short: 'Winners',
+        group_stats: 'Stats',
+        chance_button: 'Chance',
+        chance_modal_title: 'Lost Events — Chances to Win',
+        no_lose_events: 'No lost events.',
+        save: 'Save',
+        load_filter: 'Load Filter',
+        clear_filter: 'Clear Filter',
+        filter_loaded: 'Filter loaded with {count} items.',
+        filter_cleared: 'Filter cleared.',
+        invalid_filter_file: 'Invalid filter file.',
+        wins_vs_expected: 'Wins vs Expected',
+        next_chance_group: 'Next chance to win in this group:',
+        overall_chance: 'Overall chance to win at least onсe:'
       },
       ru: {
         app_title: 'Калькулятор вероятностей',
@@ -713,8 +793,7 @@
         current_profile: 'Профиль:',
         back_to_setup: '← Настройки',
         summary_statistics: 'Сводная статистика',
-        overall_win_chance: 'Общий шанс выиграть хотя бы раз:',
-        overall_lose_chance: 'Шанс проиграть все события:',
+        overall_expected_wins: 'Общее мат. ожидание побед:',
         total_wins: 'Всего побед:',
         total_losses: 'Всего поражений:',
         pending_count: 'Ожидают:',
@@ -722,7 +801,7 @@
         event_name_placeholder: 'Название события',
         entries: 'Участников',
         winners: 'Победителей',
-        group_chance_label: 'Шанс выиграть в следующий раз в этой группе:',
+        group_expected_label: 'Мат. ожидание побед:',
         collapse: 'Свернуть',
         expand: 'Развернуть',
         duplicate_group_name: 'Название группы уже существует (без учёта регистра)',
@@ -761,16 +840,28 @@
         scroll_to_top: 'Прокрутить к первому событию',
         scroll_to_bottom: 'Прокрутить к последнему событию',
         drag_handle: 'Перетащите для изменения порядка',
+        entries_short: 'Участников',
+        winners_short: 'Победителей',
+        group_stats: 'Статистика',
+        chance_button: 'Шанс',
+        chance_modal_title: 'Проигранные события — шансы на победу',
+        no_lose_events: 'Нет проигранных событий.',
+        save: 'Сохранить',
+        load_filter: 'Загрузить фильтр',
+        clear_filter: 'Очистить фильтр',
+        filter_loaded: 'Фильтр загружен: {count} элементов.',
+        filter_cleared: 'Фильтр очищен.',
+        invalid_filter_file: 'Неверный файл фильтра.',
+        wins_vs_expected: 'Победы / Ожидание',
+        next_chance_group: 'Шанс выиграть в следующий раз в этой группе:',
+        overall_chance: 'Общий шанс выиграть хотя бы раз:'
       }
     };
 
-    // Current language, default from localStorage or 'en'
     let currentLang = localStorage.getItem('lottery_lang') || 'en';
 
-    // Helper to get translation string
     function t(key) { return i18n[currentLang]?.[key] || key; }
 
-    // Apply language to all elements with data-i18n attributes
     function applyLanguage(lang) {
       currentLang = lang;
       document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
@@ -779,7 +870,6 @@
       document.getElementById('lang-en').style.fontWeight = currentLang==='en'?'bold':'normal';
       document.getElementById('lang-ru').style.fontWeight = currentLang==='ru'?'bold':'normal';
       localStorage.setItem('lottery_lang', lang);
-      // Re-render views if visible
       if (!document.getElementById('calculator-view').classList.contains('hidden')) {
         renderCalculator();
       }
@@ -791,36 +881,30 @@
       }
     }
 
-    /* ---------- Storage keys ---------- */
     const STORAGE_KEY = 'lottery_profiles_v2';
     const THEME_KEY = 'lotteryTheme';
 
-    /* ---------- Global state ---------- */
-    let profiles = {};                     // All saved profiles
-    let currentProfile = null;             // Name of active profile
-    let currentGroups = [];                // Array of group objects for current profile
-    let collapsedGroups = new Set();       // IDs of groups currently collapsed in UI
-    let pendingGroupsConfig = [];          // Temporary config during setup
+    let profiles = {};
+    let currentProfile = null;
+    let currentGroups = [];
+    let collapsedGroups = new Set();
+    let pendingGroupsConfig = [];
+    let filterSet = new Set();
 
-    /* ---------- Profile persistence ---------- */
-    // Load profiles from localStorage
     function loadProfiles() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) { try { profiles = JSON.parse(saved); } catch(e) { profiles = {}; } }
       else { profiles = {}; }
     }
 
-    // Save profiles object to localStorage
     function saveProfiles() { localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles)); }
     
-    // Save current profile state (groups and collapsed set)
     function saveCurrentProfile() {
       if (!currentProfile) return;
       profiles[currentProfile] = { groups: currentGroups, collapsedGroups: Array.from(collapsedGroups) };
       saveProfiles();
     }
     
-    // Load a profile by name into current state
     function loadProfile(name) {
       if (!profiles[name]) return false;
       currentProfile = name;
@@ -831,13 +915,40 @@
       return true;
     }
 
-    /* ---------- Probability helpers ---------- */
-    // Format probability as percentage with two decimals
     function formatPercent(value) { return value <= 0 ? "0.00" : (value * 100).toFixed(2); }
-    // Calculate probability of at least one success given an array of individual probabilities
+    function formatNumber(value) { return value.toFixed(2); }
     function calcTotalChance(probs) { return 1 - probs.reduce((prod, p) => prod * (1 - p), 1); }
 
-    /* ---------- Theme handling ---------- */
+    function calcGroupNextChance(group) {
+      let relevantProbs = [];
+      for (const ev of group.events) {
+        if (ev.status === 'win') {
+          relevantProbs = [];
+        } else if (ev.status === 'lose' && !isFiltered(ev.name)) {
+          const p = ev.participants > 0 ? ev.winners / ev.participants : 0;
+          relevantProbs.push(p);
+        }
+      }
+      return relevantProbs.length > 0 ? calcTotalChance(relevantProbs) : 0;
+    }
+
+    function calcOverallNextChance() {
+      let allRelevantProbs = [];
+      currentGroups.forEach(group => {
+        let groupProbs = [];
+        for (const ev of group.events) {
+          if (ev.status === 'win') {
+            groupProbs = [];
+          } else if (ev.status === 'lose' && !isFiltered(ev.name)) {
+            const p = ev.participants > 0 ? ev.winners / ev.participants : 0;
+            groupProbs.push(p);
+          }
+        }
+        allRelevantProbs = allRelevantProbs.concat(groupProbs);
+      });
+      return allRelevantProbs.length > 0 ? calcTotalChance(allRelevantProbs) : 0;
+    }
+
     function initTheme() {
       const saved = localStorage.getItem(THEME_KEY);
       const btn = document.getElementById('theme-toggle');
@@ -854,15 +965,12 @@
       });
     }
 
-    // Apply system preference for theme
     function applySystemTheme() {
       const prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
       document.body.classList.toggle('light-mode', prefers);
       document.getElementById('theme-toggle').textContent = prefers ? '🌙' : '☀️';
     }
 
-    /* ---------- UI helpers ---------- */
-    // Populate profile dropdown with available profile names
     function populateProfileSelect() {
       const select = document.getElementById('profile-select');
       select.innerHTML = '';
@@ -873,7 +981,6 @@
       });
     }
 
-    // Switch to setup view
     function showSetup() {
       document.getElementById('setup-view').classList.remove('hidden');
       document.getElementById('calculator-view').classList.add('hidden');
@@ -883,7 +990,6 @@
       updateCreateButtonText();
     }
 
-    // Switch to calculator view
     function showCalculator() {
       if (!currentProfile) return;
       document.getElementById('setup-view').classList.add('hidden');
@@ -891,14 +997,11 @@
       renderCalculator();
     }
 
-    // Update text on create/update button based on whether groups exist
     function updateCreateButtonText() {
       const btn = document.getElementById('create-calculator-btn');
       btn.textContent = (currentProfile && currentGroups && currentGroups.length > 0) ? t('update_calculator') : t('create_calculator');
     }
 
-    /* ---------- Setup configuration rendering ---------- */
-    // Render group configuration rows based on count
     function renderGroupsConfig(count) {
       const container = document.getElementById('groups-config-container');
       if (!pendingGroupsConfig.length || pendingGroupsConfig.length !== count) {
@@ -918,7 +1021,6 @@
         `;
         container.appendChild(div);
       });
-      // Attach event listeners to the newly created inputs
       container.querySelectorAll('.group-name-input').forEach(inp => inp.addEventListener('input', e => {
         pendingGroupsConfig[inp.dataset.index].name = inp.value;
       }));
@@ -933,32 +1035,110 @@
       }));
     }
 
-    // Check that all group names are unique (case-insensitive)
     function validateGroupNamesUnique() {
       const names = pendingGroupsConfig.map(g => g.name.trim().toLowerCase()).filter(n => n);
       return new Set(names).size === names.length;
     }
 
-    /* ---------- Autocomplete for event names ---------- */
-    // Update datalist with all unique event names from current groups
-    function updateEventNamesDatalist() {
-      const datalist = document.getElementById('event-names-datalist');
-      datalist.innerHTML = '';
+    function getUniqueEventNames() {
       const namesSet = new Set();
       currentGroups.forEach(group => {
         group.events.forEach(ev => {
           if (ev.name && ev.name.trim()) namesSet.add(ev.name.trim());
         });
       });
-      [...namesSet].sort().forEach(name => {
-        const option = document.createElement('option');
-        option.value = name;
-        datalist.appendChild(option);
+      return [...namesSet].sort();
+    }
+
+    function attachAutocomplete(inputElement, row) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'autocomplete-wrapper';
+      inputElement.parentNode.insertBefore(wrapper, inputElement);
+      wrapper.appendChild(inputElement);
+      
+      const dropdown = document.createElement('div');
+      dropdown.className = 'autocomplete-dropdown hidden';
+      wrapper.appendChild(dropdown);
+      
+      let selectedIndex = -1;
+      
+      function filterOptions(query) {
+        const names = getUniqueEventNames();
+        if (!query) return [];
+        const lowerQuery = query.toLowerCase();
+        return names.filter(name => 
+          name.toLowerCase().startsWith(lowerQuery) && 
+          name.toLowerCase() !== lowerQuery
+        );
+      }
+      
+      function renderDropdown() {
+        const query = inputElement.value.trim();
+        const options = filterOptions(query);
+        if (options.length === 0) {
+          dropdown.classList.add('hidden');
+          return;
+        }
+        dropdown.innerHTML = '';
+        options.forEach((opt, idx) => {
+          const item = document.createElement('div');
+          item.className = 'autocomplete-item';
+          item.textContent = opt;
+          item.dataset.value = opt;
+          item.addEventListener('click', () => {
+            inputElement.value = opt;
+            dropdown.classList.add('hidden');
+            inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+          });
+          dropdown.appendChild(item);
+        });
+        dropdown.classList.remove('hidden');
+        selectedIndex = -1;
+      }
+      
+      inputElement.addEventListener('input', () => {
+        renderDropdown();
+      });
+      
+      inputElement.addEventListener('focus', () => {
+        renderDropdown();
+      });
+      
+      inputElement.addEventListener('blur', () => {
+        setTimeout(() => dropdown.classList.add('hidden'), 150);
+      });
+      
+      inputElement.addEventListener('keydown', (e) => {
+        const items = dropdown.querySelectorAll('.autocomplete-item');
+        if (dropdown.classList.contains('hidden') || items.length === 0) return;
+        
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+          items.forEach((item, idx) => {
+            item.classList.toggle('selected', idx === selectedIndex);
+          });
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          selectedIndex = Math.max(selectedIndex - 1, 0);
+          items.forEach((item, idx) => {
+            item.classList.toggle('selected', idx === selectedIndex);
+          });
+        } else if (e.key === 'Enter' && selectedIndex >= 0) {
+          e.preventDefault();
+          items[selectedIndex].click();
+        } else if (e.key === 'Escape') {
+          dropdown.classList.add('hidden');
+        }
+      });
+      
+      document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) {
+          dropdown.classList.add('hidden');
+        }
       });
     }
 
-    /* ---------- Calculator rendering ---------- */
-    // Render all groups in the calculator view
     function renderCalculator() {
       const container = document.getElementById('groups-container');
       container.innerHTML = '';
@@ -966,46 +1146,57 @@
         const card = createGroupCard(group, gIdx);
         container.appendChild(card);
       });
-      updateEventNamesDatalist();
       updateGlobalStats();
     }
 
-    // Create a single group card DOM element
     function createGroupCard(group, gIdx) {
       const card = document.createElement('div');
       card.className = 'card';
       card.dataset.groupIdx = gIdx;
       card.setAttribute('draggable', 'false');
       const isCollapsed = collapsedGroups.has(group.id);
-      const groupChance = calcGroupTotalChance(group);
+      const expected = calcGroupExpected(group);
+      const winCount = group.events.filter(ev => ev.status === 'win').length;
+      const nextChance = calcGroupNextChance(group);
       const eventCount = group.events.length;
       const showScrollButtons = eventCount >= 10;
 
       card.innerHTML = `
         <div class="group-header">
-          <div style="display:flex; align-items:center; gap:4px;">
+          <div>
             <span class="drag-handle" title="${t('drag_handle')}">☰</span>
             <span class="group-name-text" style="font-size:1.2rem; font-weight:bold;">${group.name}</span>
             <button class="edit-group-btn" data-group-idx="${gIdx}" title="${t('edit')}">✏️</button>
             <button class="delete-group-btn" data-group-idx="${gIdx}" title="${t('delete')}">🗑️</button>
+            <button class="group-stats-btn" data-group-idx="${gIdx}" title="${t('group_stats')}">📊</button>
           </div>
-          <div style="display:flex; align-items:center;">
+          <div>
             ${showScrollButtons ? `
-              <button class="scroll-group-btn scroll-top-btn" data-group-idx="${gIdx}" title="${t('scroll_to_top')}">⬆️</button>
-              <button class="scroll-group-btn scroll-bottom-btn" data-group-idx="${gIdx}" title="${t('scroll_to_bottom')}">⬇️</button>
+              <button class="scroll-group-btn scroll-top-btn" data-group-idx="${gIdx}" title="${t('scroll_to_top')}" style="display: ${isCollapsed ? 'none' : ''};">⬆️</button>
+              <button class="scroll-group-btn scroll-bottom-btn" data-group-idx="${gIdx}" title="${t('scroll_to_bottom')}" style="display: ${isCollapsed ? 'none' : ''};">⬇️</button>
             ` : ''}
             <button class="collapse-btn" data-group-id="${group.id}">${isCollapsed ? t('expand') : t('collapse')}</button>
           </div>
         </div>
         <div class="group-chance-collapsed" style="${isCollapsed ? '' : 'display:none;'}">
-          ${t('group_chance_label')} ${formatPercent(groupChance)}%
+          ${t('group_expected_label')} ${winCount} / ${formatNumber(expected)}
+        </div>
+        <div class="group-next-chance-collapsed" style="${isCollapsed ? '' : 'display:none;'}">
+          ${t('next_chance_group')} ${formatPercent(nextChance)}%
         </div>
         <div class="group-content" style="${isCollapsed ? 'display:none;' : ''}">
           <div class="events-list"></div>
-          <div class="total group-total-chance">${t('group_chance_label')} <span>${formatPercent(groupChance)}%</span></div>
+          <div class="total group-total-chance">${t('group_expected_label')} <span>${winCount} / ${formatNumber(expected)}</span></div>
+          <div class="total group-next-chance">${t('next_chance_group')} <span>${formatPercent(nextChance)}%</span></div>
           <div class="group-actions">
             <button class="add-event-btn" data-group-idx="${gIdx}">${t('add_event')}</button>
           </div>
+          ${showScrollButtons ? `
+            <div class="bottom-scroll-buttons">
+              <button class="scroll-group-btn scroll-top-btn" data-group-idx="${gIdx}" title="${t('scroll_to_top')}">⬆️</button>
+              <button class="scroll-group-btn scroll-bottom-btn" data-group-idx="${gIdx}" title="${t('scroll_to_bottom')}">⬇️</button>
+            </div>
+          ` : ''}
         </div>
       `;
       const eventsDiv = card.querySelector('.events-list');
@@ -1013,14 +1204,12 @@
         eventsDiv.appendChild(createEventRow(ev, gIdx, eIdx));
       });
       
-      // Attach drag handle functionality
       const dragHandle = card.querySelector('.drag-handle');
-      dragHandle.addEventListener('mousedown', (e) => handleDragStart(e, card, gIdx));
+      dragHandle.addEventListener('mousedown', (e) => handleGroupDragStart(e, card, gIdx));
       
       return card;
     }
 
-    // Create a single event row DOM element
     function createEventRow(ev, gIdx, eIdx) {
       const row = document.createElement('div');
       row.className = 'event-row';
@@ -1028,12 +1217,16 @@
       row.dataset.eventIdx = eIdx;
       const p = ev.participants > 0 ? ev.winners / ev.participants : 0;
       row.innerHTML = `
-        <input type="text" class="event-name" value="${ev.name}" placeholder="${t('event_name_placeholder')}" list="event-names-datalist" autocomplete="off">
-        <div style="display:flex; flex-direction:column; gap:2px;">
+        <span class="event-drag-handle" title="${t('drag_handle')}">☰</span>
+        <div class="autocomplete-wrapper">
+          <input type="text" class="event-name" value="${ev.name}" placeholder="${t('event_name_placeholder')}" autocomplete="off">
+          <div class="autocomplete-dropdown hidden"></div>
+        </div>
+        <div class="input-group">
           <span class="number-label">${t('entries')}</span>
           <input type="number" class="event-number participants" value="${ev.participants}" min="1" placeholder="${t('entries')}">
         </div>
-        <div style="display:flex; flex-direction:column; gap:2px;">
+        <div class="input-group">
           <span class="number-label">${t('winners')}</span>
           <input type="number" class="event-number winners" value="${ev.winners}" min="0" placeholder="${t('winners')}">
         </div>
@@ -1045,11 +1238,16 @@
         <span class="chance-badge">${formatPercent(p)}%</span>
         <button class="delete-event-btn" title="${t('remove')}">🗑️</button>
       `;
+      const nameInput = row.querySelector('.event-name');
+      attachAutocomplete(nameInput, row);
       validateWinners(row);
+      
+      const dragHandle = row.querySelector('.event-drag-handle');
+      dragHandle.addEventListener('mousedown', (e) => handleEventDragStart(e, row, gIdx, eIdx));
+      
       return row;
     }
 
-    // Validate that winners <= participants and apply invalid class if not
     function validateWinners(row) {
       const participantsInput = row.querySelector('.participants');
       const winnersInput = row.querySelector('.winners');
@@ -1060,56 +1258,82 @@
       return isValid;
     }
 
-    // Calculate overall win probability for a group (pending/lose events only)
-    function calcGroupTotalChance(group) {
-      const probs = group.events.filter(ev => ev.status !== 'win').map(ev => ev.participants>0 ? ev.winners/ev.participants : 0);
-      return probs.length ? calcTotalChance(probs) : 0;
+    function calcGroupExpected(group) {
+      return group.events
+        .filter(ev => ev.status === 'lose' && !isFiltered(ev.name))
+        .reduce((sum, ev) => sum + (ev.participants > 0 ? ev.winners / ev.participants : 0), 0);
     }
 
-    // Update UI of a single group card after data changes
+    function isFiltered(eventName) {
+      if (!eventName || filterSet.size === 0) return false;
+      return filterSet.has(eventName.trim());
+    }
+
     function updateGroupCard(card, group) {
       const gIdx = parseInt(card.dataset.groupIdx);
-      const groupChance = calcGroupTotalChance(group);
+      const expected = calcGroupExpected(group);
+      const winCount = group.events.filter(ev => ev.status === 'win').length;
+      const nextChance = calcGroupNextChance(group);
       const chanceSpan = card.querySelector('.group-total-chance span');
-      if (chanceSpan) chanceSpan.textContent = `${formatPercent(groupChance)}%`;
+      if (chanceSpan) chanceSpan.textContent = `${winCount} / ${formatNumber(expected)}`;
       const collapsedSpan = card.querySelector('.group-chance-collapsed');
-      if (collapsedSpan) collapsedSpan.textContent = `${t('group_chance_label')} ${formatPercent(groupChance)}%`;
+      if (collapsedSpan) collapsedSpan.textContent = `${t('group_expected_label')} ${winCount} / ${formatNumber(expected)}`;
+      const nextCollapsedSpan = card.querySelector('.group-next-chance-collapsed');
+      if (nextCollapsedSpan) nextCollapsedSpan.textContent = `${t('next_chance_group')} ${formatPercent(nextChance)}%`;
+      const nextChanceSpan = card.querySelector('.group-next-chance span');
+      if (nextChanceSpan) nextChanceSpan.textContent = `${formatPercent(nextChance)}%`;
       const eventsDiv = card.querySelector('.events-list');
       eventsDiv.innerHTML = '';
-      group.events.forEach((ev, eIdx) => eventsDiv.appendChild(createEventRow(ev, gIdx, eIdx)));
+      group.events.forEach((ev, eIdx) => {
+        const row = createEventRow(ev, gIdx, eIdx);
+        eventsDiv.appendChild(row);
+      });
       
-      // Update scroll buttons visibility
       const headerDiv = card.querySelector('.group-header div:last-child');
       const existingScrollBtns = headerDiv.querySelectorAll('.scroll-group-btn');
       existingScrollBtns.forEach(btn => btn.remove());
-      if (group.events.length >= 10) {
+      const bottomDiv = card.querySelector('.bottom-scroll-buttons');
+      if (bottomDiv) bottomDiv.remove();
+      
+      const showScrollButtons = group.events.length >= 10;
+      const isCollapsed = collapsedGroups.has(group.id);
+      if (showScrollButtons) {
         const topBtn = document.createElement('button');
         topBtn.className = 'scroll-group-btn scroll-top-btn';
         topBtn.dataset.groupIdx = gIdx;
         topBtn.title = t('scroll_to_top');
         topBtn.textContent = '⬆️';
+        topBtn.style.display = isCollapsed ? 'none' : '';
         const bottomBtn = document.createElement('button');
         bottomBtn.className = 'scroll-group-btn scroll-bottom-btn';
         bottomBtn.dataset.groupIdx = gIdx;
         bottomBtn.title = t('scroll_to_bottom');
         bottomBtn.textContent = '⬇️';
+        bottomBtn.style.display = isCollapsed ? 'none' : '';
         headerDiv.insertBefore(bottomBtn, headerDiv.firstChild);
         headerDiv.insertBefore(topBtn, headerDiv.firstChild);
+        
+        const contentDiv = card.querySelector('.group-content');
+        const actionsDiv = card.querySelector('.group-actions');
+        const newBottomDiv = document.createElement('div');
+        newBottomDiv.className = 'bottom-scroll-buttons';
+        newBottomDiv.innerHTML = `
+          <button class="scroll-group-btn scroll-top-btn" data-group-idx="${gIdx}" title="${t('scroll_to_top')}">⬆️</button>
+          <button class="scroll-group-btn scroll-bottom-btn" data-group-idx="${gIdx}" title="${t('scroll_to_bottom')}">⬇️</button>
+        `;
+        actionsDiv.insertAdjacentElement('afterend', newBottomDiv);
       }
     }
 
-    // Update all group cards and global stats
     function updateAllStats() {
       currentGroups.forEach((group, idx) => {
         const card = document.querySelector(`#groups-container .card[data-group-idx="${idx}"]`);
         if (card) updateGroupCard(card, group);
       });
-      updateEventNamesDatalist();
       updateGlobalStats();
     }
 
-    /* ---------- Drag and drop for group reordering ---------- */
-    let dragState = {
+    let groupDragState = {
       active: false,
       startY: 0,
       sourceCard: null,
@@ -1118,94 +1342,176 @@
       clone: null
     };
 
-    function handleDragStart(e, card, idx) {
+    function handleGroupDragStart(e, card, idx) {
       if (e.button !== 0) return;
       e.preventDefault();
       const rect = card.getBoundingClientRect();
-      dragState.active = true;
-      dragState.startY = e.clientY;
-      dragState.sourceCard = card;
-      dragState.sourceIdx = idx;
+      groupDragState.active = true;
+      groupDragState.startY = e.clientY;
+      groupDragState.sourceCard = card;
+      groupDragState.sourceIdx = idx;
       
-      // Create clone for visual feedback
-      dragState.clone = card.cloneNode(true);
-      dragState.clone.classList.add('dragging-clone');
-      dragState.clone.style.position = 'fixed';
-      dragState.clone.style.width = rect.width + 'px';
-      dragState.clone.style.left = rect.left + 'px';
-      dragState.clone.style.top = rect.top + 'px';
-      dragState.clone.style.opacity = '0.7';
-      dragState.clone.style.zIndex = '1000';
-      dragState.clone.style.pointerEvents = 'none';
-      document.body.appendChild(dragState.clone);
+      groupDragState.clone = card.cloneNode(true);
+      groupDragState.clone.classList.add('dragging-clone');
+      groupDragState.clone.style.position = 'fixed';
+      groupDragState.clone.style.width = rect.width + 'px';
+      groupDragState.clone.style.left = rect.left + 'px';
+      groupDragState.clone.style.top = rect.top + 'px';
+      groupDragState.clone.style.opacity = '0.7';
+      groupDragState.clone.style.zIndex = '1000';
+      groupDragState.clone.style.pointerEvents = 'none';
+      document.body.appendChild(groupDragState.clone);
       
-      // Create placeholder
-      dragState.placeholder = document.createElement('div');
-      dragState.placeholder.className = 'card';
-      dragState.placeholder.style.background = 'var(--border-light)';
-      dragState.placeholder.style.opacity = '0.5';
-      dragState.placeholder.style.border = '2px dashed var(--accent)';
-      dragState.placeholder.style.height = rect.height + 'px';
-      card.parentNode.insertBefore(dragState.placeholder, card);
+      groupDragState.placeholder = document.createElement('div');
+      groupDragState.placeholder.className = 'card';
+      groupDragState.placeholder.style.background = 'var(--border-light)';
+      groupDragState.placeholder.style.opacity = '0.5';
+      groupDragState.placeholder.style.border = '2px dashed var(--accent)';
+      groupDragState.placeholder.style.height = rect.height + 'px';
+      card.parentNode.insertBefore(groupDragState.placeholder, card);
       card.style.display = 'none';
       
-      window.addEventListener('mousemove', handleDragMove);
-      window.addEventListener('mouseup', handleDragEnd);
+      window.addEventListener('mousemove', handleGroupDragMove);
+      window.addEventListener('mouseup', handleGroupDragEnd);
     }
 
-    function handleDragMove(e) {
-      if (!dragState.active) return;
+    function handleGroupDragMove(e) {
+      if (!groupDragState.active) return;
       e.preventDefault();
-      const clone = dragState.clone;
+      const clone = groupDragState.clone;
       clone.style.top = (e.clientY - 20) + 'px';
       
-      // Find card under mouse
       const elements = document.elementsFromPoint(e.clientX, e.clientY);
-      const targetCard = elements.find(el => el.classList && el.classList.contains('card') && el !== dragState.sourceCard && el !== dragState.placeholder);
-      if (targetCard && targetCard.parentNode === dragState.sourceCard.parentNode) {
-        const targetIdx = parseInt(targetCard.dataset.groupIdx);
-        const placeholder = dragState.placeholder;
+      const targetCard = elements.find(el => el.classList && el.classList.contains('card') && el !== groupDragState.sourceCard && el !== groupDragState.placeholder);
+      if (targetCard && targetCard.parentNode === groupDragState.sourceCard.parentNode) {
         const container = document.getElementById('groups-container');
-        const children = [...container.children].filter(c => c.classList.contains('card') && c !== dragState.sourceCard);
+        const children = [...container.children].filter(c => c.classList.contains('card') && c !== groupDragState.sourceCard);
         const targetIndex = children.indexOf(targetCard);
-        const currentPlaceholderIndex = children.indexOf(placeholder);
+        const currentPlaceholderIndex = children.indexOf(groupDragState.placeholder);
         if (currentPlaceholderIndex !== targetIndex) {
           if (currentPlaceholderIndex < targetIndex) {
-            container.insertBefore(placeholder, targetCard.nextSibling);
+            container.insertBefore(groupDragState.placeholder, targetCard.nextSibling);
           } else {
-            container.insertBefore(placeholder, targetCard);
+            container.insertBefore(groupDragState.placeholder, targetCard);
           }
         }
       }
     }
 
-    function handleDragEnd(e) {
-      if (!dragState.active) return;
-      window.removeEventListener('mousemove', handleDragMove);
-      window.removeEventListener('mouseup', handleDragEnd);
+    function handleGroupDragEnd(e) {
+      if (!groupDragState.active) return;
+      window.removeEventListener('mousemove', handleGroupDragMove);
+      window.removeEventListener('mouseup', handleGroupDragEnd);
       
       const container = document.getElementById('groups-container');
       const children = [...container.children].filter(c => c.classList.contains('card'));
-      const placeholderIdx = children.indexOf(dragState.placeholder);
+      const placeholderIdx = children.indexOf(groupDragState.placeholder);
       
-      // Remove clone and placeholder
-      if (dragState.clone) dragState.clone.remove();
-      dragState.sourceCard.style.display = '';
-      dragState.placeholder.remove();
+      if (groupDragState.clone) groupDragState.clone.remove();
+      groupDragState.sourceCard.style.display = '';
+      groupDragState.placeholder.remove();
       
-      // Reorder currentGroups array
-      if (placeholderIdx !== -1 && placeholderIdx !== dragState.sourceIdx) {
-        const movedGroup = currentGroups.splice(dragState.sourceIdx, 1)[0];
+      if (placeholderIdx !== -1 && placeholderIdx !== groupDragState.sourceIdx) {
+        const movedGroup = currentGroups.splice(groupDragState.sourceIdx, 1)[0];
         currentGroups.splice(placeholderIdx, 0, movedGroup);
         saveCurrentProfile();
         renderCalculator();
       }
       
-      dragState = { active: false };
+      groupDragState = { active: false };
     }
 
-    /* ---------- Event handling for calculator ---------- */
-    // Click handler for group cards (collapse, edit, delete, add event, status change, scroll)
+    let eventDragState = {
+      active: false,
+      groupIdx: -1,
+      sourceIdx: -1,
+      sourceRow: null,
+      placeholder: null,
+      clone: null
+    };
+
+    function handleEventDragStart(e, row, gIdx, eIdx) {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      const rect = row.getBoundingClientRect();
+      eventDragState.active = true;
+      eventDragState.groupIdx = gIdx;
+      eventDragState.sourceIdx = eIdx;
+      eventDragState.sourceRow = row;
+      
+      eventDragState.clone = row.cloneNode(true);
+      eventDragState.clone.classList.add('dragging-clone');
+      eventDragState.clone.style.position = 'fixed';
+      eventDragState.clone.style.width = rect.width + 'px';
+      eventDragState.clone.style.left = rect.left + 'px';
+      eventDragState.clone.style.top = rect.top + 'px';
+      eventDragState.clone.style.opacity = '0.7';
+      eventDragState.clone.style.zIndex = '1000';
+      eventDragState.clone.style.pointerEvents = 'none';
+      document.body.appendChild(eventDragState.clone);
+      
+      eventDragState.placeholder = document.createElement('div');
+      eventDragState.placeholder.className = 'event-row';
+      eventDragState.placeholder.style.background = 'var(--border-light)';
+      eventDragState.placeholder.style.opacity = '0.5';
+      eventDragState.placeholder.style.border = '2px dashed var(--accent)';
+      eventDragState.placeholder.style.height = rect.height + 'px';
+      row.parentNode.insertBefore(eventDragState.placeholder, row);
+      row.style.display = 'none';
+      
+      window.addEventListener('mousemove', handleEventDragMove);
+      window.addEventListener('mouseup', handleEventDragEnd);
+    }
+
+    function handleEventDragMove(e) {
+      if (!eventDragState.active) return;
+      e.preventDefault();
+      const clone = eventDragState.clone;
+      clone.style.top = (e.clientY - 20) + 'px';
+      
+      const elements = document.elementsFromPoint(e.clientX, e.clientY);
+      const targetRow = elements.find(el => el.classList && el.classList.contains('event-row') && el !== eventDragState.sourceRow && el !== eventDragState.placeholder && el.closest('.card') === eventDragState.sourceRow.closest('.card'));
+      if (targetRow) {
+        const list = eventDragState.sourceRow.parentNode;
+        const rows = [...list.children].filter(c => c.classList.contains('event-row'));
+        const targetIndex = rows.indexOf(targetRow);
+        const placeholderIndex = rows.indexOf(eventDragState.placeholder);
+        if (placeholderIndex !== targetIndex) {
+          if (placeholderIndex < targetIndex) {
+            list.insertBefore(eventDragState.placeholder, targetRow.nextSibling);
+          } else {
+            list.insertBefore(eventDragState.placeholder, targetRow);
+          }
+        }
+      }
+    }
+
+    function handleEventDragEnd(e) {
+      if (!eventDragState.active) return;
+      window.removeEventListener('mousemove', handleEventDragMove);
+      window.removeEventListener('mouseup', handleEventDragEnd);
+      
+      const list = eventDragState.sourceRow.parentNode;
+      const rows = [...list.children].filter(c => c.classList.contains('event-row'));
+      const placeholderIdx = rows.indexOf(eventDragState.placeholder);
+      
+      if (eventDragState.clone) eventDragState.clone.remove();
+      eventDragState.sourceRow.style.display = '';
+      eventDragState.placeholder.remove();
+      
+      if (placeholderIdx !== -1 && placeholderIdx !== eventDragState.sourceIdx) {
+        const group = currentGroups[eventDragState.groupIdx];
+        const movedEvent = group.events.splice(eventDragState.sourceIdx, 1)[0];
+        group.events.splice(placeholderIdx, 0, movedEvent);
+        saveCurrentProfile();
+        const card = document.querySelector(`#groups-container .card[data-group-idx="${eventDragState.groupIdx}"]`);
+        if (card) updateGroupCard(card, group);
+        updateGlobalStats();
+      }
+      
+      eventDragState = { active: false };
+    }
+
     function handleCalculatorClick(e) {
       const target = e.target;
       const card = target.closest('.card');
@@ -1213,27 +1519,31 @@
       const gIdx = parseInt(card.dataset.groupIdx);
       const group = currentGroups[gIdx];
 
-      // Collapse/expand toggle
       if (target.classList.contains('collapse-btn')) {
         const id = Number(target.dataset.groupId);
         const content = card.querySelector('.group-content');
         const collapsedChance = card.querySelector('.group-chance-collapsed');
+        const nextCollapsedChance = card.querySelector('.group-next-chance-collapsed');
+        const headerScrollBtns = card.querySelectorAll('.group-header .scroll-group-btn');
         if (collapsedGroups.has(id)) {
           collapsedGroups.delete(id);
           content.style.display = '';
           collapsedChance.style.display = 'none';
+          nextCollapsedChance.style.display = 'none';
           target.textContent = t('collapse');
+          headerScrollBtns.forEach(btn => btn.style.display = '');
         } else {
           collapsedGroups.add(id);
           content.style.display = 'none';
           collapsedChance.style.display = '';
+          nextCollapsedChance.style.display = '';
           target.textContent = t('expand');
+          headerScrollBtns.forEach(btn => btn.style.display = 'none');
         }
         saveCurrentProfile();
         return;
       }
 
-      // Scroll to top / bottom of events
       if (target.classList.contains('scroll-top-btn')) {
         const eventsDiv = card.querySelector('.events-list');
         if (eventsDiv.firstChild) eventsDiv.firstChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1245,7 +1555,6 @@
         return;
       }
 
-      // Edit group name (inline)
       if (target.classList.contains('edit-group-btn')) {
         const nameSpan = card.querySelector('.group-name-text');
         const currentName = group.name;
@@ -1284,8 +1593,9 @@
           input.replaceWith(newSpan);
           const collapsedChance = card.querySelector('.group-chance-collapsed');
           if (collapsedChance) {
-            const groupChance = calcGroupTotalChance(group);
-            collapsedChance.textContent = `${t('group_chance_label')} ${formatPercent(groupChance)}%`;
+            const expected = calcGroupExpected(group);
+            const winCount = group.events.filter(ev => ev.status === 'win').length;
+            collapsedChance.textContent = `${t('group_expected_label')} ${winCount} / ${formatNumber(expected)}`;
           }
         };
         input.addEventListener('blur', saveRename);
@@ -1301,7 +1611,6 @@
         return;
       }
 
-      // Delete entire group
       if (target.classList.contains('delete-group-btn')) {
         if (!confirm(t('delete_group_confirm').replace('{name}', group.name))) return;
         currentGroups.splice(gIdx, 1);
@@ -1311,17 +1620,19 @@
         return;
       }
 
-      // Add new event to group
+      if (target.classList.contains('group-stats-btn')) {
+        showStatsModal(gIdx);
+        return;
+      }
+
       if (target.classList.contains('add-event-btn')) {
         group.events.push({ name: '', participants: 1, winners: 0, status: 'pending' });
         saveCurrentProfile();
         updateGroupCard(card, group);
         updateGlobalStats();
-        updateEventNamesDatalist();
         return;
       }
 
-      // Delete single event
       if (target.classList.contains('delete-event-btn')) {
         const row = target.closest('.event-row');
         const eIdx = parseInt(row.dataset.eventIdx);
@@ -1332,11 +1643,9 @@
         saveCurrentProfile();
         updateGroupCard(card, group);
         updateGlobalStats();
-        updateEventNamesDatalist();
         return;
       }
 
-      // Change event status (win/lose/pending)
       if (target.classList.contains('status-btn')) {
         const row = target.closest('.event-row');
         const eIdx = parseInt(row.dataset.eventIdx);
@@ -1349,7 +1658,6 @@
       }
     }
 
-    // Input handler for event fields (name, participants, winners)
     function handleCalculatorInput(e) {
       const target = e.target;
       if (!target.matches('.event-name, .event-number')) return;
@@ -1362,7 +1670,6 @@
       
       if (target.classList.contains('event-name')) {
         ev.name = target.value;
-        updateEventNamesDatalist(); // Update suggestions as user types
       } else {
         const field = target.classList.contains('participants') ? 'participants' : 'winners';
         let val = parseInt(target.value) || 0;
@@ -1375,40 +1682,42 @@
       const p = ev.participants > 0 ? ev.winners / ev.participants : 0;
       row.querySelector('.chance-badge').textContent = `${formatPercent(p)}%`;
       saveCurrentProfile();
-      const groupChance = calcGroupTotalChance(group);
-      card.querySelector('.group-total-chance span').textContent = `${formatPercent(groupChance)}%`;
-      card.querySelector('.group-chance-collapsed').textContent = `${t('group_chance_label')} ${formatPercent(groupChance)}%`;
+      const expected = calcGroupExpected(group);
+      const winCount = group.events.filter(ev => ev.status === 'win').length;
+      card.querySelector('.group-total-chance span').textContent = `${winCount} / ${formatNumber(expected)}`;
+      card.querySelector('.group-chance-collapsed').textContent = `${t('group_expected_label')} ${winCount} / ${formatNumber(expected)}`;
       updateGlobalStats();
     }
 
-    // Update the global statistics panel
     function updateGlobalStats() {
       const allEvents = currentGroups.flatMap(g => g.events);
-      const considered = allEvents.filter(ev => ev.status !== 'win');
-      const probs = considered.map(ev => ev.participants>0 ? ev.winners/ev.participants : 0);
-      const overall = probs.length ? calcTotalChance(probs) : 0;
-      const loseAll = probs.length ? probs.reduce((prod, p) => prod * (1 - p), 1) : 1;
-      const wins = allEvents.filter(ev => ev.status === 'win').length;
-      const losses = allEvents.filter(ev => ev.status === 'lose').length;
+      const loseEvents = allEvents.filter(ev => ev.status === 'lose' && !isFiltered(ev.name));
+      const totalExpected = loseEvents.reduce((sum, ev) => sum + (ev.participants > 0 ? ev.winners / ev.participants : 0), 0);
+      const totalWins = allEvents.filter(ev => ev.status === 'win').length;
+      const totalLosses = allEvents.filter(ev => ev.status === 'lose').length;
       const pending = allEvents.filter(ev => ev.status === 'pending').length;
+      const overallNextChance = calcOverallNextChance();
 
-      // Build top event name chances
       const nameMap = new Map();
-      considered.forEach(ev => {
+      const consideredForTop = allEvents.filter(ev => ev.status !== 'win' && !isFiltered(ev.name));
+      consideredForTop.forEach(ev => {
         if (!ev.name.trim()) return;
         const key = ev.name.trim();
+        if (filterSet.has(key)) return;
         if (!nameMap.has(key)) nameMap.set(key, []);
         nameMap.get(key).push(ev.participants>0 ? ev.winners/ev.participants : 0);
       });
       let topEntries = [];
-      for (let [name, arr] of nameMap.entries()) topEntries.push({ name, chance: calcTotalChance(arr) });
+      for (let [name, arr] of nameMap.entries()) {
+        topEntries.push({ name, chance: calcTotalChance(arr) });
+      }
       topEntries.sort((a,b) => b.chance - a.chance);
       const top3 = topEntries.slice(0,3);
 
       document.getElementById('global-stats').innerHTML = `
-        <p class="summary-text">${t('overall_win_chance')} <strong>${formatPercent(overall)}%</strong></p>
-        <p class="summary-text">${t('overall_lose_chance')} <strong>${formatPercent(loseAll)}%</strong></p>
-        <p class="summary-text">${t('total_wins')} ${wins} · ${t('total_losses')} ${losses} · ${t('pending_count')} ${pending}</p>
+        <p class="summary-text">${t('overall_chance')} <strong>${formatPercent(overallNextChance)}%</strong></p>
+        <p class="summary-text">${t('overall_expected_wins')} <strong>${totalWins} / ${formatNumber(totalExpected)}</strong></p>
+        <p class="summary-text">${t('total_wins')} ${totalWins} · ${t('total_losses')} ${totalLosses} · ${t('pending_count')} ${pending}</p>
         <div class="summary-text">${t('top_names')}</div>
         <ul class="top-stats-list">
           ${top3.map(item => `<li><strong>${item.name}</strong> — ${formatPercent(item.chance)}%</li>`).join('')}
@@ -1417,18 +1726,65 @@
       `;
     }
 
-    // Show detailed statistics modal
-    function showStatsModal() {
-      // Build content grouped by groups in order
+    function showChanceModal() {
+      const loseEvents = currentGroups.flatMap(g => g.events).filter(ev => ev.status === 'lose' && !isFiltered(ev.name));
+      if (loseEvents.length === 0) {
+        alert(t('no_lose_events'));
+        return;
+      }
+      
+      const nameMap = new Map();
+      loseEvents.forEach(ev => {
+        const name = ev.name.trim();
+        if (!name) return;
+        if (!nameMap.has(name)) nameMap.set(name, []);
+        nameMap.get(name).push(ev.participants > 0 ? ev.winners / ev.participants : 0);
+      });
+      
+      const entries = [];
+      for (let [name, probs] of nameMap.entries()) {
+        entries.push({ name, chance: calcTotalChance(probs) });
+      }
+      entries.sort((a,b) => b.chance - a.chance);
+      
+      let html = `
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>${t('chance_modal_title')}</h2>
+            <button class="modal-close">✖</button>
+          </div>
+          <div style="max-height: 70vh; overflow-y: auto;">
+      `;
+      entries.forEach(entry => {
+        html += `
+          <div class="stats-item lose-status">
+            <span class="stats-item-name">${entry.name || '—'}</span>
+            <span class="stats-item-probability">${formatPercent(entry.chance)}%</span>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
+      
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = html;
+      document.body.appendChild(overlay);
+      
+      overlay.querySelector('.modal-close').addEventListener('click', () => overlay.remove());
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    }
+
+    function showStatsModal(groupIndex = null) {
+      const groupsToShow = (groupIndex !== null) ? [currentGroups[groupIndex]] : currentGroups;
+      
       let html = `<div class="modal-content"><div class="modal-header"><h2>${t('statistics_title')}</h2><button class="modal-close">✖</button></div>`;
       
-      currentGroups.forEach(group => {
+      groupsToShow.forEach(group => {
         const events = group.events;
         const winEvents = events.filter(ev => ev.status === 'win');
         const pendingEvents = events.filter(ev => ev.status === 'pending');
         const loseEvents = events.filter(ev => ev.status === 'lose');
         
-        // Sort each category by probability descending
         const sortByProb = (a,b) => (b.participants>0 ? b.winners/b.participants : 0) - (a.participants>0 ? a.winners/a.participants : 0);
         winEvents.sort(sortByProb);
         pendingEvents.sort(sortByProb);
@@ -1436,20 +1792,26 @@
         
         html += `<div class="stats-section"><div class="stats-group-title">${group.name}</div>`;
         
-        const renderCategory = (title, arr, categoryKey) => {
+        const renderCategory = (title, arr, statusClass) => {
           if (arr.length === 0) return '';
           let catHtml = `<div class="stats-category"><div class="stats-category-title">${title}</div>`;
           arr.forEach(ev => {
             const prob = ev.participants>0 ? ev.winners/ev.participants : 0;
-            catHtml += `<div class="stats-item"><span>${ev.name || '—'}</span><span>${formatPercent(prob)}% (${ev.participants} ${t('participants_count').toLowerCase()})</span></div>`;
+            catHtml += `
+              <div class="stats-item ${statusClass}">
+                <span class="stats-item-name">${ev.name || '—'}</span>
+                <span class="stats-item-numbers">${t('entries_short')}: ${ev.participants}  ${t('winners_short')}: ${ev.winners}</span>
+                <span class="stats-item-probability">${formatPercent(prob)}%</span>
+              </div>
+            `;
           });
           catHtml += `</div>`;
           return catHtml;
         };
         
-        html += renderCategory(t('win_section'), winEvents);
-        html += renderCategory(t('pending_section'), pendingEvents);
-        html += renderCategory(t('lose_section'), loseEvents);
+        html += renderCategory(t('win_section'), winEvents, 'win-status');
+        html += renderCategory(t('pending_section'), pendingEvents, 'pending-status');
+        html += renderCategory(t('lose_section'), loseEvents, 'lose-status');
         html += `</div>`;
       });
       
@@ -1464,13 +1826,9 @@
       overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
     }
 
-    // Add a new group with default values
     function addNewGroup() {
-      // Check if adding this group would exceed 5 groups
       if (currentGroups.length >= 5) {
-        if (!confirm(t('many_groups_warning'))) {
-          return;
-        }
+        if (!confirm(t('many_groups_warning'))) return;
       }
       const newGroup = {
         id: Date.now() + Math.random(),
@@ -1483,8 +1841,6 @@
       renderCalculator();
     }
 
-    /* ---------- Hotkeys & swipe gestures ---------- */
-    // Arrow up/down navigation in inputs, Ctrl+Enter to add event
     function setupHotkeys() {
       document.addEventListener('keydown', e => {
         if (e.target.tagName === 'INPUT') {
@@ -1511,14 +1867,12 @@
               saveCurrentProfile();
               updateGroupCard(card, group);
               updateGlobalStats();
-              updateEventNamesDatalist();
             }
           }
         }
       });
     }
 
-    // Swipe left on event row to delete (mobile)
     function setupSwipe() {
       let touchStartX = 0;
       document.addEventListener('touchstart', e => {
@@ -1542,13 +1896,10 @@
           saveCurrentProfile();
           updateGroupCard(card, group);
           updateGlobalStats();
-          updateEventNamesDatalist();
         }
       });
     }
 
-    /* ---------- Backup / Restore / Export / Import ---------- */
-    // Export all profiles as JSON file
     function backupAllProfiles() {
       const data = JSON.stringify(profiles);
       const blob = new Blob([data], {type: 'application/json'});
@@ -1559,7 +1910,6 @@
       alert(t('backup_success'));
     }
 
-    // Restore all profiles from JSON file
     function restoreBackup(file) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -1574,7 +1924,6 @@
       reader.readAsText(file);
     }
 
-    // Export current profile only
     function exportProfile() {
       if (!currentProfile) { alert('No profile selected'); return; }
       const data = JSON.stringify(profiles[currentProfile], null, 2);
@@ -1585,7 +1934,6 @@
       a.click();
     }
 
-    // Import profile from JSON file (with conflict handling)
     function importProfile(file) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -1625,20 +1973,45 @@
       reader.readAsText(file);
     }
 
-    /* ---------- Initialization ---------- */
+    function loadFilterFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = e.target.result;
+          let items = [];
+          if (file.name.endsWith('.json')) {
+            const json = JSON.parse(content);
+            items = Array.isArray(json) ? json : [];
+          } else {
+            items = content.split(/\r?\n/).map(s => s.trim()).filter(s => s.length > 0);
+          }
+          filterSet = new Set(items);
+          alert(t('filter_loaded').replace('{count}', filterSet.size));
+          updateAllStats();
+        } catch {
+          alert(t('invalid_filter_file'));
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearFilter() {
+      filterSet.clear();
+      alert(t('filter_cleared'));
+      updateAllStats();
+    }
+
     function init() {
       initTheme();
       loadProfiles();
       applyLanguage(currentLang);
       
-      // Language toggle buttons
       document.getElementById('lang-en').addEventListener('click', ()=> applyLanguage('en'));
       document.getElementById('lang-ru').addEventListener('click', ()=> applyLanguage('ru'));
       
       populateProfileSelect();
       showSetup();
       
-      // New profile creation
       document.getElementById('new-profile-btn').addEventListener('click', ()=>{
         document.getElementById('new-profile-area').classList.remove('hidden');
         document.getElementById('new-profile-name').value = '';
@@ -1663,7 +2036,6 @@
         updateCreateButtonText();
       });
       
-      // Delete selected profile
       document.getElementById('delete-profile-btn').addEventListener('click', ()=>{
         const name = document.getElementById('profile-select').value;
         if (!name) return;
@@ -1678,7 +2050,6 @@
         updateCreateButtonText();
       });
       
-      // Load selected profile
       document.getElementById('load-profile-btn').addEventListener('click', ()=>{
         const name = document.getElementById('profile-select').value;
         if (!name) return;
@@ -1689,7 +2060,6 @@
         }
       });
       
-      // Apply group count (with warning for >5)
       document.getElementById('apply-groups-count').addEventListener('click', ()=>{
         let count = parseInt(document.getElementById('groups-count').value) || 1;
         if (count > 5) {
@@ -1712,7 +2082,6 @@
         renderGroupsConfig(pendingGroupsConfig.length);
       });
       
-      // Create/Update calculator from setup
       document.getElementById('create-calculator-btn').addEventListener('click', ()=>{
         if (!currentProfile) { alert('Select or create profile first'); return; }
         const valid = pendingGroupsConfig.every(g => g.name.trim() && g.itemsCount>0);
@@ -1755,7 +2124,6 @@
         updateCreateButtonText();
       });
       
-      // Back to setup from calculator
       document.getElementById('back-to-setup').addEventListener('click', ()=>{
         if (currentProfile && profiles[currentProfile]) {
           pendingGroupsConfig = currentGroups.map(g => ({ id: g.id, name: g.name, itemsCount: g.itemsCount }));
@@ -1767,7 +2135,6 @@
         updateCreateButtonText();
       });
       
-      // Reset calculator data (clear all inputs)
       document.getElementById('reset-calculator-btn').addEventListener('click', ()=>{
         if (confirm(t('reset_confirm'))) {
           currentGroups.forEach(group => {
@@ -1783,7 +2150,6 @@
         }
       });
       
-      // Helper to attach export/import listeners
       function setupExportImport(exportBtnId, importBtnId, fileInputId) {
         document.getElementById(exportBtnId).addEventListener('click', exportProfile);
         document.getElementById(importBtnId).addEventListener('click', ()=> document.getElementById(fileInputId).click());
@@ -1794,32 +2160,39 @@
       setupExportImport('export-profile-setup', 'import-profile-setup', 'import-file-setup');
       setupExportImport('export-profile-calc', 'import-profile-calc', 'import-file-calc');
       
-      // Calculator event delegation
+      document.getElementById('save-profile-calc').addEventListener('click', ()=>{
+        saveCurrentProfile();
+        alert('Profile saved.');
+      });
+      
       const groupsContainer = document.getElementById('groups-container');
       groupsContainer.addEventListener('click', handleCalculatorClick);
       groupsContainer.addEventListener('input', handleCalculatorInput);
       
       document.getElementById('add-group-calc').addEventListener('click', addNewGroup);
       
-      // Mobile menu toggle
       document.getElementById('mobile-menu-toggle').addEventListener('click', ()=>{
         document.getElementById('actions-menu').classList.toggle('show');
       });
       
-      // Backup / restore all profiles
       document.getElementById('backup-all-btn').addEventListener('click', backupAllProfiles);
       document.getElementById('restore-backup-btn').addEventListener('click', ()=> document.getElementById('restore-backup-file').click());
       document.getElementById('restore-backup-file').addEventListener('change', e => {
         if (e.target.files[0]) { restoreBackup(e.target.files[0]); e.target.value = ''; }
       });
       
-      // Stats modal button
-      document.getElementById('show-stats-modal-btn').addEventListener('click', showStatsModal);
+      document.getElementById('show-stats-modal-btn').addEventListener('click', ()=> showStatsModal());
+      document.getElementById('show-chance-modal-btn').addEventListener('click', showChanceModal);
+      
+      document.getElementById('load-filter-btn').addEventListener('click', ()=> document.getElementById('filter-file-input').click());
+      document.getElementById('filter-file-input').addEventListener('change', e => {
+        if (e.target.files[0]) { loadFilterFile(e.target.files[0]); e.target.value = ''; }
+      });
+      document.getElementById('clear-filter-btn').addEventListener('click', clearFilter);
       
       setupHotkeys();
       setupSwipe();
       
-      // Auto-save on page unload
       window.addEventListener('beforeunload', e => {
         if (currentProfile) saveCurrentProfile();
       });
