@@ -1626,7 +1626,7 @@
       }
 
       if (target.classList.contains('add-event-btn')) {
-        group.events.push({ name: '', participants: 1, winners: 0, status: 'pending' });
+        group.events.push({ name: '', participants: 1, winners: 1, status: 'pending' });
         saveCurrentProfile();
         updateGroupCard(card, group);
         updateGlobalStats();
@@ -1834,7 +1834,7 @@
         id: Date.now() + Math.random(),
         name: t('new_group_default'),
         itemsCount: 1,
-        events: [{ name: '', participants: 1, winners: 0, status: 'pending' }]
+        events: [{ name: '', participants: 1, winners: 1, status: 'pending' }]
       };
       currentGroups.unshift(newGroup);
       saveCurrentProfile();
@@ -2108,7 +2108,7 @@
           const oldGroup = currentGroups[idx];
           const events = oldGroup ? oldGroup.events.slice(0, g.itemsCount) : [];
           while (events.length < g.itemsCount) {
-            events.push({ name: '', participants: 1, winners: 0, status: 'pending' });
+            events.push({ name: '', participants: 1, winners: 1, status: 'pending' });
           }
           return {
             id: g.id,
@@ -2141,7 +2141,7 @@
             group.events.forEach(ev => {
               ev.name = '';
               ev.participants = 1;
-              ev.winners = 0;
+              ev.winners = 1;
               ev.status = 'pending';
             });
           });
