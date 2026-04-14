@@ -1,4 +1,4 @@
-[**🇷🇺 Читать на русском**](README_RU.md)
+[**🇷🇺 Читать на русском**](README_RU.md) [![Open Calculator](https://img.shields.io/badge/Open_Calculator-38bdf8?style=for-the-badge)](https://yourusername.github.io/repository-name)
 
 # Probability Calculator
 
