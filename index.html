@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Probability calculator</title>
+  <style>
+    /* Colors and settings used everywhere in the app */
+    :root {
+      --bg-body: #0b1220;
+      --bg-card: #111827b8;
+      --text-primary: #e5e7eb;
+      --text-secondary: #94a3b8;
+      --input-bg: #02061799;
+      --border-light: #94a3b826;
+      --accent: #38bdf8;
+      --accent1: #6366f1;
+      --accent2: #22c55e;
+      --accent3: #38bdf8;
+      --winner-row-bg: #34d3990f;
+      --winner-row-border: #34d3992e;
+      --table-hover-bg: #38bdf80a;
+      --gradient-light-1: #fbbf241f;
+      --gradient-light-2: #f973161a;
+      --gradient-light-3: #eab30814;
+      --light-card-bg: #fffffff0;
+      --light-card-shadow: #00000014;
+      --light-table-header-bg: #f1f5f9;
+      --light-result-bg: #f8fafcf2;
+      --light-result-border: #94a3b866;
+      --light-winner-row-bg: #34d3991f;
+      --light-winner-row-border: #34d39940;
+      --error-color: #ef4444;
+    }
+
+    /* Light mode colors */
+    .light-mode {
+      --bg-body: #f8fafc;
+      --bg-card: var(--light-card-bg);
+      --text-primary: #1e2937;
+      --text-secondary: #64748b;
+      --input-bg: #ffffff;
+      --border-light: #94a3b859;
+      --accent: #0ea5e9;
+      --winner-row-bg: var(--light-winner-row-bg);
+      --winner-row-border: var(--light-winner-row-border);
+      --table-hover-bg: #0ea5e914;
+    }
+
+    /* Reset margins and make sure everything uses border-box */
+    * { box-sizing: border-box; margin: 0; }
+
+    /* Main page background and text color */
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--text-primary);
+      background: var(--bg-body);
+      min-height: 100vh;
+    }
+
+    /* Background glow circles */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 20% 10%, #6366f12e, transparent 40%),
+                  radial-gradient(circle at 80% 30%, #22c55e1f, transparent 45%),
+                  radial-gradient(circle at 50% 90%, #38bdf81a, transparent 45%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Same glows but for light mode */
+    .light-mode body::before {
+      background: radial-gradient(circle at 20% 10%, var(--gradient-light-1), transparent 40%),
+                  radial-gradient(circle at 80% 30%, var(--gradient-light-2), transparent 45%),
+                  radial-gradient(circle at 50% 90%, var(--gradient-light-3), transparent 45%);
+    }
+
+    /* Main content wrapper */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 30px 20px;
+      width: 100%;
+    }
+
+    /* Big title at the top with gradient animation */
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 auto 18px;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3));
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientShift 10s ease infinite;
+      padding: 12px 24px;
+      border-radius: 16px;
+    }
+
+    /* Title color animation */
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Card style used for all sections */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      backdrop-filter: blur(14px);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 10px 30px #00000059, inset 0 1px 0 #ffffff08;
+    }
+
+    /* Card style in light mode */
+    .light-mode .card {
+      backdrop-filter: none;
+      background: var(--light-card-bg);
+      box-shadow: 0 10px 30px var(--light-card-shadow);
+    }
+
+    /* Small labels above inputs */
+    .label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    /* All input fields */
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border-light);
+      background: var(--input-bg);
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.18s ease;
+      font-weight: 500;
+    }
+
+    /* Focus style for inputs */
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #38bdf81f; }
+    .light-mode input:focus { box-shadow: 0 0 0 3px #0ea5e926; }
+
+    /* Red border when winners > participants */
+    input.invalid { border-color: var(--error-color); box-shadow: 0 0 0 3px #ef44441f; }
+
+    /* Regular buttons */
+    button {
+      background: #38bdf826;
+      color: #7dd3fc;
+      border: 1px solid #38bdf840;
+      padding: 8px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.15s;
+      font-weight: 500;
+    }
+
+    /* Buttons in light mode */
+    .light-mode button {
+      background: #0ea5e91f;
+      color: #0c4a6e;
+      border-color: #0ea5e966;
+    }
+
+    button:hover { background: #38bdf838; transform: translateY(-1px); }
+    .light-mode button:hover { background: #0ea5e933; }
+
+    /* Theme and language buttons in header */
+    .theme-btn, .lang-btn {
+      background: #94a3b826;
+      color: var(--text-primary);
+      border: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      font-size: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px #00000033;
+      margin-left: 8px;
+    }
+
+    /* Top-right header controls */
+    .header-actions {
+      position: absolute;
+      top: 32px;
+      right: 40px;
+      z-index: 100;
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Utility flex row */
+    .flex-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    /* Single event row */
+    .event-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      position: relative;
+      transition: transform 0.2s;
+      touch-action: pan-y;
+    }
+
+    /* Event name input takes more space */
+    .event-name { flex: 1.5; min-width: 120px; }
+    /* Fixed width for number inputs */
+    .event-number { width: 80px; }
+
+    /* Small label above participants/winners fields */
+    .number-label { font-size: 12px; color: var(--text-secondary); text-align: left; margin-bottom: 2px; }
+
+    /* Container for win/lose/pending toggle buttons */
+    .status-btns { display: flex; gap: 4px; }
+
+    /* Win / Lose / Pending status buttons */
+    .status-btn {
+      padding: 4px 0;
+      width: 36px;
+      text-align: center;
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #475569;
+      font-size: 16px;
+    }
+
+    .light-mode .status-btn { background: #e2e8f0; color: #0f172a; border-color: #94a3b8; }
+
+    /* Active states for status buttons */
+    .status-btn.active-win { background: #22c55e; color: white; border-color: #16a34a; }
+    .status-btn.active-lose { background: #ef4444; color: white; border-color: #dc2626; }
+    .status-btn.active-pending { background: #fbbf24; color: #0f172a; border-color: #d97706; }
+
+    /* Display of event win probability */
+    .chance-badge {
+      min-width: 70px;
+      text-align: right;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* Delete event button */
+    .delete-event-btn {
+      background: transparent;
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      padding: 0;
+    }
+
+    .delete-event-btn:hover {
+      background: #ef444433;
+      color: #ef4444;
+      border-color: #ef4444;
+    }
+
+    /* Header of each group card */
+    .group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    /* Collapse/expand button */
+    .collapse-btn {
+      background: transparent;
+      border: 1px solid var(--border-light);
+      padding: 4px 12px;
+    }
+
+    /* Statistics card at the bottom */
+    .stats-card { margin-top: 24px; }
+    /* Profile selector dropdown area */
+    .profile-selector { margin-bottom: 16px; }
+    /* Error message text */
+    .error-message { color: #f87171; font-size: 13px; margin-top: 4px; }
+    /* Warning banner for excessive groups */
+    .warning-banner { background: #fbbf2426; border-left: 4px solid #fbbf24; padding: 10px; border-radius: 8px; margin: 12px 0; }
+    /* Setup configuration section */
+    .setup-section { margin-top: 16px; }
+    /* Row for configuring a single group in setup */
+    .group-config-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-end; }
+    /* Utility to hide elements */
+    .hidden { display: none !important; }
+
+    /* Footer text */
+    .footer-note {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3));
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientShift 10s ease infinite;
+    }
+
+    /* List for top chances in global stats */
+    .top-stats-list { list-style: none; padding: 0; margin: 8px 0; }
+    .top-stats-list li { padding: 4px 0; border-bottom: 1px dashed var(--border-light); }
+
+    /* Export/import buttons container */
+    .export-import { display: flex; gap: 6px; margin-left: auto; }
+    /* Collapsed group chance preview */
+    .group-chance-collapsed {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
+    /* Action buttons inside group card */
+    .group-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    /* Summary statistic text style */
+    .summary-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    /* Label above group items count input */
+    .event-config-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    /* Mobile menu button */
+    .mobile-menu-btn {
+      display: none;
+      background: #94a3b826;
+      border: none;
+      font-size: 24px;
+      padding: 8px 16px;
+    }
+
+    /* Actions menu for mobile (hidden by default) */
+    .actions-menu {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    /* Mobile layout fixes */
+    @media (max-width: 768px) {
+      .container { padding: 16px 12px; }
+      .header-actions { top: 16px; right: 16px; }
+      .event-row { flex-direction: column; align-items: stretch; }
+      .event-number { width: 100%; }
+      .actions-menu { display: none; flex-direction: column; position: absolute; background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 12px; padding: 12px; right: 16px; top: 60px; z-index: 200; }
+      .actions-menu.show { display: flex; }
+      .mobile-menu-btn { display: inline-flex; }
+      .card.flex-row { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- Title with gradient animation -->
+  <h1 id="main-title" data-i18n="app_title">Probability calculator</h1>
+  
+  <!-- Header controls: language toggle and theme switch -->
+  <div class="header-actions">
+    <button id="lang-en" class="lang-btn" aria-label="English">EN</button>
+    <button id="lang-ru" class="lang-btn" aria-label="Русский">RU</button>
+    <button id="theme-toggle" class="theme-btn" aria-label="Toggle theme">☀️</button>
+  </div>
+
+  <!-- Setup view: profile management and group configuration -->
+  <div id="setup-view">
+    <div class="card">
+      <div class="label" data-i18n="profile_section">Profile</div>
+      <div class="profile-selector flex-row">
+        <select id="profile-select" style="flex:1;"></select>
+        <button id="load-profile-btn" data-i18n="load">Load</button>
+        <button id="new-profile-btn" data-i18n="new_profile">New</button>
+        <button id="delete-profile-btn" data-i18n="delete_profile">Delete</button>
+      </div>
+      <div class="export-import">
+        <button id="export-profile-setup" data-i18n="export">Export</button>
+        <button id="import-profile-setup" data-i18n="import">Import</button>
+        <button id="backup-all-btn" data-i18n="backup_all">Backup All</button>
+        <button id="restore-backup-btn" data-i18n="restore_backup">Restore Backup</button>
+        <!-- Hidden file inputs for import/restore -->
+        <input type="file" id="import-file-setup" accept=".json" style="display:none;">
+        <input type="file" id="restore-backup-file" accept=".json" style="display:none;">
+      </div>
+      <!-- New profile creation area (initially hidden) -->
+      <div id="new-profile-area" class="hidden">
+        <input type="text" id="new-profile-name" placeholder="Profile name" data-i18n-placeholder="profile_name_placeholder">
+        <div class="flex-row" style="margin-top:8px;">
+          <button id="create-profile-confirm" data-i18n="create">Create</button>
+          <button id="cancel-new-profile" data-i18n="cancel">Cancel</button>
+        </div>
+        <div id="profile-error" class="error-message"></div>
+      </div>
+    </div>
+
+    <!-- Group setup card (shown after profile selection/creation) -->
+    <div id="groups-setup-card" class="card hidden">
+      <div class="label" data-i18n="groups_setup">Event groups setup</div>
+      <div class="setup-section">
+        <div class="flex-row">
+          <span data-i18n="how_many_groups">How many event groups?</span>
+          <input type="number" id="groups-count" min="1" value="1" style="width:100px;">
+          <button id="apply-groups-count" data-i18n="apply">Apply</button>
+        </div>
+        <!-- Warning shown if group count > 5 -->
+        <div id="groups-count-warning" class="warning-banner hidden">
+          <span data-i18n="many_groups_warning">More than 5 groups may reduce readability & performance. Consider splitting it into multiple profiles.</span>
+          <div class="flex-row" style="margin-top:8px;">
+            <button id="continue-anyway" data-i18n="continue_anyway">Continue anyway</button>
+            <button id="cancel-to-count" data-i18n="cancel">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <!-- Container for per-group configuration rows -->
+      <div id="groups-config-container" class="setup-section"></div>
+      <div class="flex-row" style="justify-content: space-between; margin-top: 16px;">
+        <button id="add-group-row" data-i18n="add_group">+ Add group</button>
+        <button id="create-calculator-btn" data-i18n="create_calculator">Create Calculator</button>
+      </div>
+      <div id="setup-error" class="error-message"></div>
+    </div>
+  </div>
+
+  <!-- Main calculator view (hidden until setup complete) -->
+  <div id="calculator-view" class="hidden">
+    <div class="card flex-row" style="justify-content: space-between;">
+      <span data-i18n="current_profile">Profile:</span>
+      <strong id="current-profile-name"></strong>
+      <!-- Mobile menu toggle button -->
+      <button class="mobile-menu-btn" id="mobile-menu-toggle">☰</button>
+      <!-- Actions menu (desktop inline, mobile dropdown) -->
+      <div class="actions-menu" id="actions-menu">
+        <button id="export-profile-calc" data-i18n="export">Export</button>
+        <button id="import-profile-calc" data-i18n="import">Import</button>
+        <input type="file" id="import-file-calc" accept=".json" style="display:none;">
+        <button id="reset-calculator-btn" data-i18n="reset">Reset</button>
+        <button id="back-to-setup" data-i18n="back_to_setup">← Setup</button>
+      </div>
+    </div>
+    <!-- Button to add a new group directly in calculator -->
+    <div style="margin-bottom: 16px;">
+      <button id="add-group-calc" data-i18n="add_group_calc">+ Add Group</button>
+    </div>
+    <!-- Container for all group cards -->
+    <div id="groups-container"></div>
+    <!-- Global statistics card -->
+    <div class="card stats-card">
+      <div class="label" data-i18n="summary_statistics">Summary statistics</div>
+      <div id="global-stats"></div>
+    </div>
+  </div>
+  <!-- Footer -->
+  <div class="footer-note">Made by Ch1cWolf<br>2026 ©</div>
+</div>
+
+<script>
+  (function(){
+    "use strict";
+
+    /* ---------- Internationalization (i18n) ---------- */
+    /* Translations for English and Russian */
+    const i18n = {
+      en: {
+        app_title: 'Probability calculator',
+        profile_section: 'Profile',
+        load: 'Load',
+        new_profile: 'New',
+        delete_profile: 'Delete',
+        export: 'Export',
+        import: 'Import',
+        backup_all: 'Backup All',
+        restore_backup: 'Restore Backup',
+        profile_name_placeholder: 'Profile name',
+        create: 'Create',
+        cancel: 'Cancel',
+        groups_setup: 'Event groups setup',
+        how_many_groups: 'How many event groups?',
+        apply: 'Apply',
+        many_groups_warning: 'More than 5 groups may reduce readability & performance. Consider splitting it into multiple profiles.',
+        continue_anyway: 'Continue anyway',
+        add_group: '+ Add group',
+        add_group_calc: '+ Add Group',
+        create_calculator: 'Create Calculator',
+        update_calculator: 'Update Calculator',
+        group_name_placeholder: 'Enter group name',
+        events_label: 'Events',
+        items_count_label: 'Number of events:',
+        remove: 'Remove',
+        current_profile: 'Profile:',
+        back_to_setup: '← Setup',
+        summary_statistics: 'Summary statistics',
+        overall_win_chance: 'Overall chance to win at least one:',
+        overall_lose_chance: 'Chance to lose all events:',
+        total_wins: 'Total wins:',
+        total_losses: 'Total losses:',
+        pending_count: 'Pending:',
+        top_names: 'Top event chances (pending/lose):',
+        event_name_placeholder: 'Event name',
+        entries: 'Entries',
+        winners: 'Winners',
+        group_chance_label: 'Next chance to win in this group:',
+        collapse: 'Collapse',
+        expand: 'Expand',
+        duplicate_group_name: 'Group name already exists (case‑insensitive)',
+        duplicate_profile: 'Profile already exists',
+        fill_all_fields: 'Fill all group names and counts',
+        profile_load_confirm: 'Load profile? Unsaved changes will be lost.',
+        empty_profile_name: 'Profile name cannot be empty',
+        group_name_required: 'Group name required',
+        items_count_positive: 'Number of events must be >0',
+        reset_confirm: 'Reset all entered data? This cannot be undone.',
+        reset: 'Reset',
+        delete_profile_confirm: 'Delete profile "{name}"? This action cannot be undone.',
+        add_event: 'Add event',
+        remove_event_confirm: 'This event contains data. Delete it anyway?',
+        event_count_reduced_confirm: 'You reduced number of events for group "{group}". Extra events will be lost. Continue?',
+        import_overwrite_confirm: 'Profile "{name}" already exists. Overwrite it?',
+        import_cancelled: 'Import cancelled.',
+        import_success_load: 'Profile "{name}" imported. Load it now?',
+        import_overwrite_success: 'Profile "{name}" overwritten. Load it now?',
+        backup_success: 'All profiles backed up.',
+        restore_success: 'Profiles restored.',
+        invalid_input: 'Winners cannot exceed participants.',
+        new_group_default: 'New Group',
+        edit: 'Edit',
+        delete: 'Delete',
+        delete_group_confirm: 'Delete group "{name}"? This action cannot be undone.',
+        empty_group_name: 'Group name cannot be empty.',
+        duplicate_group_name_exists: 'A group with this name already exists.',
+      },
+      ru: {
+        app_title: 'Калькулятор вероятностей',
+        profile_section: 'Профиль',
+        load: 'Загрузить',
+        new_profile: 'Новый',
+        delete_profile: 'Удалить',
+        export: 'Экспорт',
+        import: 'Импорт',
+        backup_all: 'Резерв. копия',
+        restore_backup: 'Восстановить',
+        profile_name_placeholder: 'Имя профиля',
+        create: 'Создать',
+        cancel: 'Отмена',
+        groups_setup: 'Настройка групп событий',
+        how_many_groups: 'Сколько групп событий?',
+        apply: 'Применить',
+        many_groups_warning: 'Более 5 групп могут снизить читаемость и производительность. Возможно, стоит разделить их на несколько профилей.',
+        continue_anyway: 'Всё равно продолжить',
+        add_group: '+ Добавить группу',
+        add_group_calc: '+ Добавить группу',
+        create_calculator: 'Создать калькулятор',
+        update_calculator: 'Обновить калькулятор',
+        group_name_placeholder: 'Введите название группы',
+        events_label: 'Событий',
+        items_count_label: 'Количество событий:',
+        remove: 'Удалить',
+        current_profile: 'Профиль:',
+        back_to_setup: '← Настройки',
+        summary_statistics: 'Сводная статистика',
+        overall_win_chance: 'Общий шанс выиграть хотя бы раз:',
+        overall_lose_chance: 'Шанс проиграть все события:',
+        total_wins: 'Всего побед:',
+        total_losses: 'Всего поражений:',
+        pending_count: 'Ожидают:',
+        top_names: 'Лучшие шансы (в процесе/поражение):',
+        event_name_placeholder: 'Название события',
+        entries: 'Участников',
+        winners: 'Победителей',
+        group_chance_label: 'Шанс выиграть в следующий раз в этой группе:',
+        collapse: 'Свернуть',
+        expand: 'Развернуть',
+        duplicate_group_name: 'Название группы уже существует (без учёта регистра)',
+        duplicate_profile: 'Профиль уже существует',
+        fill_all_fields: 'Заполните все названия и количество событий',
+        profile_load_confirm: 'Загрузить профиль? Несохранённые изменения будут потеряны.',
+        empty_profile_name: 'Имя профиля не может быть пустым',
+        group_name_required: 'Введите название группы',
+        items_count_positive: 'Количество событий должно быть >0',
+        reset_confirm: 'Сбросить все введённые данные? Это действие необратимо.',
+        reset: 'Сброс',
+        delete_profile_confirm: 'Удалить профиль "{name}"? Это действие необратимо.',
+        add_event: 'Добавить событие',
+        remove_event_confirm: 'Это событие содержит данные. Удалить его?',
+        event_count_reduced_confirm: 'Вы уменьшили количество событий в группе "{group}". Лишние события будут удалены. Продолжить?',
+        import_overwrite_confirm: 'Профиль "{name}" уже существует. Перезаписать его?',
+        import_cancelled: 'Импорт отменён.',
+        import_success_load: 'Профиль "{name}" импортирован. Загрузить его сейчас?',
+        import_overwrite_success: 'Профиль "{name}" перезаписан. Загрузить его сейчас?',
+        backup_success: 'Резервная копия всех профилей создана.',
+        restore_success: 'Профили восстановлены.',
+        invalid_input: 'Победителей не может быть больше участников.',
+        new_group_default: 'Новая группа',
+        edit: 'Редактировать',
+        delete: 'Удалить',
+        delete_group_confirm: 'Удалить группу "{name}"? Это действие необратимо.',
+        empty_group_name: 'Название группы не может быть пустым.',
+        duplicate_group_name_exists: 'Группа с таким названием уже существует.',
+      }
+    };
+
+    // Current language, default from localStorage or 'en'
+    let currentLang = localStorage.getItem('lottery_lang') || 'en';
+
+    // Helper to get translation string
+    function t(key) { return i18n[currentLang]?.[key] || key; }
+
+    // Apply language to all elements with data-i18n attributes
+    function applyLanguage(lang) {
+      currentLang = lang;
+      document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+      document.getElementById('main-title').textContent = t('app_title');
+      document.getElementById('lang-en').style.fontWeight = currentLang==='en'?'bold':'normal';
+      document.getElementById('lang-ru').style.fontWeight = currentLang==='ru'?'bold':'normal';
+      localStorage.setItem('lottery_lang', lang);
+      // Re-render views if visible
+      if (!document.getElementById('calculator-view').classList.contains('hidden')) {
+        renderCalculator();
+      }
+      if (!document.getElementById('setup-view').classList.contains('hidden')) {
+        if (!document.getElementById('groups-setup-card').classList.contains('hidden')) {
+          renderGroupsConfig(pendingGroupsConfig.length);
+        }
+        updateCreateButtonText();
+      }
+    }
+
+    /* ---------- Storage keys ---------- */
+    const STORAGE_KEY = 'lottery_profiles_v2';
+    const THEME_KEY = 'lotteryTheme';
+
+    /* ---------- Global state ---------- */
+    let profiles = {};                     // All saved profiles
+    let currentProfile = null;             // Name of active profile
+    let currentGroups = [];                // Array of group objects for current profile
+    let collapsedGroups = new Set();       // IDs of groups currently collapsed in UI
+    let pendingGroupsConfig = [];          // Temporary config during setup
+
+    /* ---------- Profile persistence ---------- */
+    // Load profiles from localStorage
+    function loadProfiles() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) { try { profiles = JSON.parse(saved); } catch(e) { profiles = {}; } }
+      else { profiles = {}; }
+    }
+
+    // Save profiles object to localStorage
+    function saveProfiles() { localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles)); }
+    
+    // Save current profile state (groups and collapsed set)
+    function saveCurrentProfile() {
+      if (!currentProfile) return;
+      profiles[currentProfile] = { groups: currentGroups, collapsedGroups: Array.from(collapsedGroups) };
+      saveProfiles();
+    }
+    
+    // Load a profile by name into current state
+    function loadProfile(name) {
+      if (!profiles[name]) return false;
+      currentProfile = name;
+      const data = profiles[name];
+      currentGroups = JSON.parse(JSON.stringify(data.groups || []));
+      collapsedGroups = new Set(data.collapsedGroups || []);
+      document.getElementById('current-profile-name').textContent = name;
+      return true;
+    }
+
+    /* ---------- Probability helpers ---------- */
+    // Format probability as percentage with two decimals
+    function formatPercent(value) { return value <= 0 ? "0.00" : (value * 100).toFixed(2); }
+    // Calculate probability of at least one success given an array of individual probabilities
+    function calcTotalChance(probs) { return 1 - probs.reduce((prod, p) => prod * (1 - p), 1); }
+
+    /* ---------- Theme handling ---------- */
+    function initTheme() {
+      const saved = localStorage.getItem(THEME_KEY);
+      const btn = document.getElementById('theme-toggle');
+      if (saved === 'light') { document.body.classList.add('light-mode'); btn.textContent = '🌙'; }
+      else if (saved === 'dark') { document.body.classList.remove('light-mode'); btn.textContent = '☀️'; }
+      else { applySystemTheme(); }
+      btn.addEventListener('click', () => {
+        const isLight = document.body.classList.toggle('light-mode');
+        btn.textContent = isLight ? '🌙' : '☀️';
+        localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
+      });
+      window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+        if (!localStorage.getItem(THEME_KEY)) applySystemTheme();
+      });
+    }
+
+    // Apply system preference for theme
+    function applySystemTheme() {
+      const prefers = window.matchMedia('(prefers-color-scheme: light)').matches;
+      document.body.classList.toggle('light-mode', prefers);
+      document.getElementById('theme-toggle').textContent = prefers ? '🌙' : '☀️';
+    }
+
+    /* ---------- UI helpers ---------- */
+    // Populate profile dropdown with available profile names
+    function populateProfileSelect() {
+      const select = document.getElementById('profile-select');
+      select.innerHTML = '';
+      Object.keys(profiles).forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name; opt.textContent = name;
+        select.appendChild(opt);
+      });
+    }
+
+    // Switch to setup view
+    function showSetup() {
+      document.getElementById('setup-view').classList.remove('hidden');
+      document.getElementById('calculator-view').classList.add('hidden');
+      populateProfileSelect();
+      document.getElementById('groups-setup-card').classList.add('hidden');
+      document.getElementById('new-profile-area').classList.add('hidden');
+      updateCreateButtonText();
+    }
+
+    // Switch to calculator view
+    function showCalculator() {
+      if (!currentProfile) return;
+      document.getElementById('setup-view').classList.add('hidden');
+      document.getElementById('calculator-view').classList.remove('hidden');
+      renderCalculator();
+    }
+
+    // Update text on create/update button based on whether groups exist
+    function updateCreateButtonText() {
+      const btn = document.getElementById('create-calculator-btn');
+      btn.textContent = (currentProfile && currentGroups && currentGroups.length > 0) ? t('update_calculator') : t('create_calculator');
+    }
+
+    /* ---------- Setup configuration rendering ---------- */
+    // Render group configuration rows based on count
+    function renderGroupsConfig(count) {
+      const container = document.getElementById('groups-config-container');
+      if (!pendingGroupsConfig.length || pendingGroupsConfig.length !== count) {
+        pendingGroupsConfig = Array.from({length: count}, (_,i) => ({ id: Date.now()+i, name: '', itemsCount: 1 }));
+      }
+      container.innerHTML = '';
+      pendingGroupsConfig.forEach((g, idx) => {
+        const div = document.createElement('div');
+        div.className = 'group-config-row';
+        div.innerHTML = `
+          <input type="text" class="group-name-input" placeholder="${t('group_name_placeholder')}" value="${g.name}" data-index="${idx}" style="flex:2">
+          <div style="display:flex; flex-direction:column;">
+            <span class="event-config-label">${t('events_label')}</span>
+            <input type="number" class="group-items-input" min="1" value="${g.itemsCount}" data-index="${idx}" style="width:80px;">
+          </div>
+          <button class="remove-group-btn" data-index="${idx}">${t('remove')}</button>
+        `;
+        container.appendChild(div);
+      });
+      // Attach event listeners to the newly created inputs
+      container.querySelectorAll('.group-name-input').forEach(inp => inp.addEventListener('input', e => {
+        pendingGroupsConfig[inp.dataset.index].name = inp.value;
+      }));
+      container.querySelectorAll('.group-items-input').forEach(inp => inp.addEventListener('change', e => {
+        const idx = inp.dataset.index;
+        pendingGroupsConfig[idx].itemsCount = Math.max(1, parseInt(inp.value) || 1);
+        inp.value = pendingGroupsConfig[idx].itemsCount;
+      }));
+      container.querySelectorAll('.remove-group-btn').forEach(btn => btn.addEventListener('click', e => {
+        pendingGroupsConfig.splice(btn.dataset.index, 1);
+        renderGroupsConfig(pendingGroupsConfig.length);
+      }));
+    }
+
+    // Check that all group names are unique (case-insensitive)
+    function validateGroupNamesUnique() {
+      const names = pendingGroupsConfig.map(g => g.name.trim().toLowerCase()).filter(n => n);
+      return new Set(names).size === names.length;
+    }
+
+    /* ---------- Calculator rendering ---------- */
+    // Render all groups in the calculator view
+    function renderCalculator() {
+      const container = document.getElementById('groups-container');
+      container.innerHTML = '';
+      currentGroups.forEach((group, gIdx) => {
+        const card = createGroupCard(group, gIdx);
+        container.appendChild(card);
+      });
+      updateGlobalStats();
+    }
+
+    // Create a single group card DOM element
+    function createGroupCard(group, gIdx) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.groupIdx = gIdx;
+      const isCollapsed = collapsedGroups.has(group.id);
+      const groupChance = calcGroupTotalChance(group);
+      card.innerHTML = `
+        <div class="group-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="group-name-text" style="font-size:1.2rem; font-weight:bold;">${group.name}</span>
+            <button class="edit-group-btn" data-group-idx="${gIdx}" title="${t('edit')}">✏️</button>
+            <button class="delete-group-btn" data-group-idx="${gIdx}" title="${t('delete')}">🗑️</button>
+          </div>
+          <button class="collapse-btn" data-group-id="${group.id}">${isCollapsed ? t('expand') : t('collapse')}</button>
+        </div>
+        <div class="group-chance-collapsed" style="${isCollapsed ? '' : 'display:none;'}">
+          ${t('group_chance_label')} ${formatPercent(groupChance)}%
+        </div>
+        <div class="group-content" style="${isCollapsed ? 'display:none;' : ''}">
+          <div class="events-list"></div>
+          <div class="total group-total-chance">${t('group_chance_label')} <span>${formatPercent(groupChance)}%</span></div>
+          <div class="group-actions">
+            <button class="add-event-btn" data-group-idx="${gIdx}">${t('add_event')}</button>
+          </div>
+        </div>
+      `;
+      const eventsDiv = card.querySelector('.events-list');
+      group.events.forEach((ev, eIdx) => {
+        eventsDiv.appendChild(createEventRow(ev, gIdx, eIdx));
+      });
+      return card;
+    }
+
+    // Create a single event row DOM element
+    function createEventRow(ev, gIdx, eIdx) {
+      const row = document.createElement('div');
+      row.className = 'event-row';
+      row.dataset.groupIdx = gIdx;
+      row.dataset.eventIdx = eIdx;
+      const p = ev.participants > 0 ? ev.winners / ev.participants : 0;
+      row.innerHTML = `
+        <input type="text" class="event-name" value="${ev.name}" placeholder="${t('event_name_placeholder')}">
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <span class="number-label">${t('entries')}</span>
+          <input type="number" class="event-number participants" value="${ev.participants}" min="1" placeholder="${t('entries')}">
+        </div>
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <span class="number-label">${t('winners')}</span>
+          <input type="number" class="event-number winners" value="${ev.winners}" min="0" placeholder="${t('winners')}">
+        </div>
+        <div class="status-btns">
+          <button class="status-btn ${ev.status==='win'?'active-win':''}" data-status="win">✅</button>
+          <button class="status-btn ${ev.status==='lose'?'active-lose':''}" data-status="lose">❌</button>
+          <button class="status-btn ${ev.status==='pending'?'active-pending':''}" data-status="pending">⏳</button>
+        </div>
+        <span class="chance-badge">${formatPercent(p)}%</span>
+        <button class="delete-event-btn" title="${t('remove')}">🗑️</button>
+      `;
+      validateWinners(row);
+      return row;
+    }
+
+    // Validate that winners <= participants and apply invalid class if not
+    function validateWinners(row) {
+      const participantsInput = row.querySelector('.participants');
+      const winnersInput = row.querySelector('.winners');
+      const participants = parseInt(participantsInput.value) || 1;
+      const winners = parseInt(winnersInput.value) || 0;
+      const isValid = winners <= participants;
+      winnersInput.classList.toggle('invalid', !isValid);
+      return isValid;
+    }
+
+    // Calculate overall win probability for a group (pending/lose events only)
+    function calcGroupTotalChance(group) {
+      const probs = group.events.filter(ev => ev.status !== 'win').map(ev => ev.participants>0 ? ev.winners/ev.participants : 0);
+      return probs.length ? calcTotalChance(probs) : 0;
+    }
+
+    // Update UI of a single group card after data changes
+    function updateGroupCard(card, group) {
+      const gIdx = parseInt(card.dataset.groupIdx);
+      const groupChance = calcGroupTotalChance(group);
+      const chanceSpan = card.querySelector('.group-total-chance span');
+      if (chanceSpan) chanceSpan.textContent = `${formatPercent(groupChance)}%`;
+      const collapsedSpan = card.querySelector('.group-chance-collapsed');
+      if (collapsedSpan) collapsedSpan.textContent = `${t('group_chance_label')} ${formatPercent(groupChance)}%`;
+      const eventsDiv = card.querySelector('.events-list');
+      eventsDiv.innerHTML = '';
+      group.events.forEach((ev, eIdx) => eventsDiv.appendChild(createEventRow(ev, gIdx, eIdx)));
+    }
+
+    // Update all group cards and global stats
+    function updateAllStats() {
+      currentGroups.forEach((group, idx) => {
+        const card = document.querySelector(`#groups-container .card[data-group-idx="${idx}"]`);
+        if (card) updateGroupCard(card, group);
+      });
+      updateGlobalStats();
+    }
+
+    /* ---------- Event handling for calculator ---------- */
+    // Click handler for group cards (collapse, edit, delete, add event, status change)
+    function handleCalculatorClick(e) {
+      const target = e.target;
+      const card = target.closest('.card');
+      if (!card) return;
+      const gIdx = parseInt(card.dataset.groupIdx);
+      const group = currentGroups[gIdx];
+
+      // Collapse/expand toggle
+      if (target.classList.contains('collapse-btn')) {
+        const id = Number(target.dataset.groupId);
+        const content = card.querySelector('.group-content');
+        const collapsedChance = card.querySelector('.group-chance-collapsed');
+        if (collapsedGroups.has(id)) {
+          collapsedGroups.delete(id);
+          content.style.display = '';
+          collapsedChance.style.display = 'none';
+          target.textContent = t('collapse');
+        } else {
+          collapsedGroups.add(id);
+          content.style.display = 'none';
+          collapsedChance.style.display = '';
+          target.textContent = t('expand');
+        }
+        saveCurrentProfile();
+        return;
+      }
+
+      // Edit group name (inline)
+      if (target.classList.contains('edit-group-btn')) {
+        const nameSpan = card.querySelector('.group-name-text');
+        const currentName = group.name;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentName;
+        input.style.fontSize = '1.2rem';
+        input.style.fontWeight = 'bold';
+        input.style.padding = '4px 8px';
+        input.style.width = 'auto';
+        input.style.minWidth = '150px';
+        nameSpan.replaceWith(input);
+        input.focus();
+        input.select();
+        const saveRename = () => {
+          let newName = input.value.trim();
+          if (!newName) {
+            alert(t('empty_group_name'));
+            input.replaceWith(nameSpan);
+            return;
+          }
+          const lowerNew = newName.toLowerCase();
+          const duplicate = currentGroups.some((g, idx) => idx !== gIdx && g.name.toLowerCase() === lowerNew);
+          if (duplicate) {
+            alert(t('duplicate_group_name_exists'));
+            input.replaceWith(nameSpan);
+            return;
+          }
+          group.name = newName;
+          saveCurrentProfile();
+          const newSpan = document.createElement('span');
+          newSpan.className = 'group-name-text';
+          newSpan.style.fontSize = '1.2rem';
+          newSpan.style.fontWeight = 'bold';
+          newSpan.textContent = newName;
+          input.replaceWith(newSpan);
+          const collapsedChance = card.querySelector('.group-chance-collapsed');
+          if (collapsedChance) {
+            const groupChance = calcGroupTotalChance(group);
+            collapsedChance.textContent = `${t('group_chance_label')} ${formatPercent(groupChance)}%`;
+          }
+        };
+        input.addEventListener('blur', saveRename);
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            input.blur();
+          }
+          if (e.key === 'Escape') {
+            input.replaceWith(nameSpan);
+          }
+        });
+        return;
+      }
+
+      // Delete entire group
+      if (target.classList.contains('delete-group-btn')) {
+        if (!confirm(t('delete_group_confirm').replace('{name}', group.name))) return;
+        currentGroups.splice(gIdx, 1);
+        collapsedGroups.delete(group.id);
+        saveCurrentProfile();
+        renderCalculator();
+        return;
+      }
+
+      // Add new event to group
+      if (target.classList.contains('add-event-btn')) {
+        group.events.push({ name: '', participants: 1, winners: 0, status: 'pending' });
+        saveCurrentProfile();
+        updateGroupCard(card, group);
+        updateGlobalStats();
+        return;
+      }
+
+      // Delete single event
+      if (target.classList.contains('delete-event-btn')) {
+        const row = target.closest('.event-row');
+        const eIdx = parseInt(row.dataset.eventIdx);
+        const ev = group.events[eIdx];
+        const isDefault = ev.name === '' && ev.participants === 1 && ev.winners === 0 && ev.status === 'pending';
+        if (!isDefault && !confirm(t('remove_event_confirm'))) return;
+        group.events.splice(eIdx, 1);
+        saveCurrentProfile();
+        updateGroupCard(card, group);
+        updateGlobalStats();
+        return;
+      }
+
+      // Change event status (win/lose/pending)
+      if (target.classList.contains('status-btn')) {
+        const row = target.closest('.event-row');
+        const eIdx = parseInt(row.dataset.eventIdx);
+        const status = target.dataset.status;
+        group.events[eIdx].status = status;
+        saveCurrentProfile();
+        updateGroupCard(card, group);
+        updateGlobalStats();
+        return;
+      }
+    }
+
+    // Input handler for event fields (name, participants, winners)
+    function handleCalculatorInput(e) {
+      const target = e.target;
+      if (!target.matches('.event-name, .event-number')) return;
+      const row = target.closest('.event-row');
+      const card = row.closest('.card');
+      const gIdx = parseInt(card.dataset.groupIdx);
+      const eIdx = parseInt(row.dataset.eventIdx);
+      const group = currentGroups[gIdx];
+      const ev = group.events[eIdx];
+      
+      if (target.classList.contains('event-name')) {
+        ev.name = target.value;
+      } else {
+        const field = target.classList.contains('participants') ? 'participants' : 'winners';
+        let val = parseInt(target.value) || 0;
+        if (field === 'participants') val = Math.max(1, val);
+        else val = Math.max(0, val);
+        target.value = val;
+        ev[field] = val;
+        validateWinners(row);
+      }
+      const p = ev.participants > 0 ? ev.winners / ev.participants : 0;
+      row.querySelector('.chance-badge').textContent = `${formatPercent(p)}%`;
+      saveCurrentProfile();
+      const groupChance = calcGroupTotalChance(group);
+      card.querySelector('.group-total-chance span').textContent = `${formatPercent(groupChance)}%`;
+      card.querySelector('.group-chance-collapsed').textContent = `${t('group_chance_label')} ${formatPercent(groupChance)}%`;
+      updateGlobalStats();
+    }
+
+    // Update the global statistics panel
+    function updateGlobalStats() {
+      const allEvents = currentGroups.flatMap(g => g.events);
+      const considered = allEvents.filter(ev => ev.status !== 'win');
+      const probs = considered.map(ev => ev.participants>0 ? ev.winners/ev.participants : 0);
+      const overall = probs.length ? calcTotalChance(probs) : 0;
+      const loseAll = probs.length ? probs.reduce((prod, p) => prod * (1 - p), 1) : 1;
+      const wins = allEvents.filter(ev => ev.status === 'win').length;
+      const losses = allEvents.filter(ev => ev.status === 'lose').length;
+      const pending = allEvents.filter(ev => ev.status === 'pending').length;
+
+      // Build top event name chances
+      const nameMap = new Map();
+      considered.forEach(ev => {
+        if (!ev.name.trim()) return;
+        const key = ev.name.trim();
+        if (!nameMap.has(key)) nameMap.set(key, []);
+        nameMap.get(key).push(ev.participants>0 ? ev.winners/ev.participants : 0);
+      });
+      let topEntries = [];
+      for (let [name, arr] of nameMap.entries()) topEntries.push({ name, chance: calcTotalChance(arr) });
+      topEntries.sort((a,b) => b.chance - a.chance);
+      const top3 = topEntries.slice(0,3);
+
+      document.getElementById('global-stats').innerHTML = `
+        <p class="summary-text">${t('overall_win_chance')} <strong>${formatPercent(overall)}%</strong></p>
+        <p class="summary-text">${t('overall_lose_chance')} <strong>${formatPercent(loseAll)}%</strong></p>
+        <p class="summary-text">${t('total_wins')} ${wins} · ${t('total_losses')} ${losses} · ${t('pending_count')} ${pending}</p>
+        <div class="summary-text">${t('top_names')}</div>
+        <ul class="top-stats-list">
+          ${top3.map(item => `<li><strong>${item.name}</strong> — ${formatPercent(item.chance)}%</li>`).join('')}
+          ${top3.length === 0 ? '<li>—</li>' : ''}
+        </ul>
+      `;
+    }
+
+    // Add a new group with default values
+    function addNewGroup() {
+    // Check if adding this group would exceed 5 groups
+    if (currentGroups.length >= 5) {
+      if (!confirm(t('many_groups_warning'))) {
+        return;
+        }
+      }
+      const newGroup = {
+        id: Date.now() + Math.random(),
+        name: t('new_group_default'),
+        itemsCount: 1,
+        events: [{ name: '', participants: 1, winners: 0, status: 'pending' }]
+      };
+      currentGroups.unshift(newGroup);
+      saveCurrentProfile();
+      renderCalculator();
+    }
+
+    /* ---------- Hotkeys & swipe gestures ---------- */
+    // Arrow up/down navigation in inputs, Ctrl+Enter to add event
+    function setupHotkeys() {
+      document.addEventListener('keydown', e => {
+        if (e.target.tagName === 'INPUT') {
+          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            const row = e.target.closest('.event-row');
+            if (!row) return;
+            const card = row.closest('.card');
+            const rows = [...card.querySelectorAll('.event-row')];
+            const idx = rows.indexOf(row);
+            const nextIdx = e.key === 'ArrowUp' ? idx - 1 : idx + 1;
+            if (nextIdx >= 0 && nextIdx < rows.length) {
+              const nextInput = rows[nextIdx].querySelector(`.${e.target.classList[0]}`);
+              if (nextInput) nextInput.focus();
+            }
+          }
+          if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            const card = e.target.closest('.card');
+            if (card) {
+              const gIdx = card.dataset.groupIdx;
+              const group = currentGroups[gIdx];
+              group.events.push({ name: '', participants: 1, winners: 0, status: 'pending' });
+              saveCurrentProfile();
+              updateGroupCard(card, group);
+              updateGlobalStats();
+            }
+          }
+        }
+      });
+    }
+
+    // Swipe left on event row to delete (mobile)
+    function setupSwipe() {
+      let touchStartX = 0;
+      document.addEventListener('touchstart', e => {
+        const row = e.target.closest('.event-row');
+        if (row) touchStartX = e.touches[0].clientX;
+      }, {passive: true});
+      document.addEventListener('touchend', e => {
+        const row = e.target.closest('.event-row');
+        if (!row) return;
+        const touchEndX = e.changedTouches[0].clientX;
+        const diff = touchStartX - touchEndX;
+        if (diff > 70) {
+          const card = row.closest('.card');
+          const gIdx = parseInt(card.dataset.groupIdx);
+          const eIdx = parseInt(row.dataset.eventIdx);
+          const group = currentGroups[gIdx];
+          const ev = group.events[eIdx];
+          const isDefault = ev.name === '' && ev.participants === 1 && ev.winners === 0 && ev.status === 'pending';
+          if (!isDefault && !confirm(t('remove_event_confirm'))) return;
+          group.events.splice(eIdx, 1);
+          saveCurrentProfile();
+          updateGroupCard(card, group);
+          updateGlobalStats();
+        }
+      });
+    }
+
+    /* ---------- Backup / Restore / Export / Import ---------- */
+    // Export all profiles as JSON file
+    function backupAllProfiles() {
+      const data = JSON.stringify(profiles);
+      const blob = new Blob([data], {type: 'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `lottery_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      alert(t('backup_success'));
+    }
+
+    // Restore all profiles from JSON file
+    function restoreBackup(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          profiles = imported;
+          saveProfiles();
+          populateProfileSelect();
+          alert(t('restore_success'));
+        } catch { alert('Invalid backup file'); }
+      };
+      reader.readAsText(file);
+    }
+
+    // Export current profile only
+    function exportProfile() {
+      if (!currentProfile) { alert('No profile selected'); return; }
+      const data = JSON.stringify(profiles[currentProfile], null, 2);
+      const blob = new Blob([data], {type: 'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${currentProfile}.json`;
+      a.click();
+    }
+
+    // Import profile from JSON file (with conflict handling)
+    function importProfile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!imported.groups) throw new Error('Invalid profile');
+          const fileName = file.name.replace(/\.json$/i, '');
+          const importedName = fileName.trim();
+          if (!importedName) throw new Error('Invalid file name');
+          
+          const existingProfile = Object.keys(profiles).find(p => p === importedName);
+          if (existingProfile) {
+            if (confirm(t('import_overwrite_confirm').replace('{name}', existingProfile))) {
+              profiles[existingProfile] = imported;
+              saveProfiles();
+              populateProfileSelect();
+              if (confirm(t('import_overwrite_success').replace('{name}', existingProfile))) {
+                loadProfile(existingProfile);
+                showCalculator();
+              }
+            } else {
+              alert(t('import_cancelled'));
+            }
+          } else {
+            profiles[importedName] = imported;
+            saveProfiles();
+            populateProfileSelect();
+            if (confirm(t('import_success_load').replace('{name}', importedName))) {
+              loadProfile(importedName);
+              showCalculator();
+            }
+          }
+        } catch(err) {
+          alert('Invalid file');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    /* ---------- Initialization ---------- */
+    function init() {
+      initTheme();
+      loadProfiles();
+      applyLanguage(currentLang);
+      
+      // Language toggle buttons
+      document.getElementById('lang-en').addEventListener('click', ()=> applyLanguage('en'));
+      document.getElementById('lang-ru').addEventListener('click', ()=> applyLanguage('ru'));
+      
+      populateProfileSelect();
+      showSetup();
+      
+      // New profile creation
+      document.getElementById('new-profile-btn').addEventListener('click', ()=>{
+        document.getElementById('new-profile-area').classList.remove('hidden');
+        document.getElementById('new-profile-name').value = '';
+      });
+      document.getElementById('cancel-new-profile').addEventListener('click', ()=> document.getElementById('new-profile-area').classList.add('hidden'));
+      document.getElementById('create-profile-confirm').addEventListener('click', ()=>{
+        const name = document.getElementById('new-profile-name').value.trim();
+        if (!name) { document.getElementById('profile-error').textContent = t('empty_profile_name'); return; }
+        if (Object.keys(profiles).some(p => p.toLowerCase() === name.toLowerCase())) {
+          document.getElementById('profile-error').textContent = t('duplicate_profile'); return;
+        }
+        profiles[name] = { groups: [], collapsedGroups: [] };
+        saveProfiles();
+        currentProfile = name;
+        currentGroups = [];
+        populateProfileSelect();
+        document.getElementById('new-profile-area').classList.add('hidden');
+        document.getElementById('groups-setup-card').classList.remove('hidden');
+        document.getElementById('groups-count').value = 1;
+        pendingGroupsConfig = [];
+        renderGroupsConfig(1);
+        updateCreateButtonText();
+      });
+      
+      // Delete selected profile
+      document.getElementById('delete-profile-btn').addEventListener('click', ()=>{
+        const name = document.getElementById('profile-select').value;
+        if (!name) return;
+        if (!confirm(t('delete_profile_confirm').replace('{name}', name))) return;
+        delete profiles[name];
+        saveProfiles();
+        if (currentProfile === name) currentProfile = null;
+        populateProfileSelect();
+        if (Object.keys(profiles).length === 0) {
+          document.getElementById('groups-setup-card').classList.add('hidden');
+        }
+        updateCreateButtonText();
+      });
+      
+      // Load selected profile
+      document.getElementById('load-profile-btn').addEventListener('click', ()=>{
+        const name = document.getElementById('profile-select').value;
+        if (!name) return;
+        if (currentProfile && currentProfile !== name && !confirm(t('profile_load_confirm'))) return;
+        if (loadProfile(name)) {
+          document.getElementById('groups-setup-card').classList.add('hidden');
+          showCalculator();
+        }
+      });
+      
+      // Apply group count (with warning for >5)
+      document.getElementById('apply-groups-count').addEventListener('click', ()=>{
+        let count = parseInt(document.getElementById('groups-count').value) || 1;
+        if (count > 5) {
+          document.getElementById('groups-count-warning').classList.remove('hidden');
+        } else {
+          renderGroupsConfig(count);
+          document.getElementById('groups-setup-card').classList.remove('hidden');
+        }
+      });
+      document.getElementById('continue-anyway').addEventListener('click', ()=>{
+        let count = parseInt(document.getElementById('groups-count').value) || 1;
+        renderGroupsConfig(count);
+        document.getElementById('groups-count-warning').classList.add('hidden');
+      });
+      document.getElementById('cancel-to-count').addEventListener('click', ()=>{
+        document.getElementById('groups-count-warning').classList.add('hidden');
+      });
+      document.getElementById('add-group-row').addEventListener('click', ()=>{
+        pendingGroupsConfig.push({ id: Date.now()+Math.random(), name: '', itemsCount: 1 });
+        renderGroupsConfig(pendingGroupsConfig.length);
+      });
+      
+      // Create/Update calculator from setup
+      document.getElementById('create-calculator-btn').addEventListener('click', ()=>{
+        if (!currentProfile) { alert('Select or create profile first'); return; }
+        const valid = pendingGroupsConfig.every(g => g.name.trim() && g.itemsCount>0);
+        if (!valid) { document.getElementById('setup-error').textContent = t('fill_all_fields'); return; }
+        if (!validateGroupNamesUnique()) { document.getElementById('setup-error').textContent = t('duplicate_group_name'); return; }
+
+        const isUpdate = currentGroups && currentGroups.length > 0;
+        let proceed = true;
+        if (isUpdate) {
+          for (let i = 0; i < pendingGroupsConfig.length; i++) {
+            const newCfg = pendingGroupsConfig[i];
+            const oldGroup = currentGroups[i];
+            if (oldGroup && newCfg.itemsCount < oldGroup.events.length) {
+              if (!confirm(t('event_count_reduced_confirm').replace('{group}', newCfg.name))) {
+                proceed = false;
+                break;
+              }
+            }
+          }
+        }
+        if (!proceed) return;
+
+        currentGroups = pendingGroupsConfig.map((g, idx) => {
+          const oldGroup = currentGroups[idx];
+          const events = oldGroup ? oldGroup.events.slice(0, g.itemsCount) : [];
+          while (events.length < g.itemsCount) {
+            events.push({ name: '', participants: 1, winners: 0, status: 'pending' });
+          }
+          return {
+            id: g.id,
+            name: g.name.trim(),
+            itemsCount: g.itemsCount,
+            events: events
+          };
+        });
+
+        saveCurrentProfile();
+        populateProfileSelect();
+        showCalculator();
+        updateCreateButtonText();
+      });
+      
+      // Back to setup from calculator
+      document.getElementById('back-to-setup').addEventListener('click', ()=>{
+        if (currentProfile && profiles[currentProfile]) {
+          pendingGroupsConfig = currentGroups.map(g => ({ id: g.id, name: g.name, itemsCount: g.itemsCount }));
+          document.getElementById('groups-count').value = pendingGroupsConfig.length;
+        }
+        showSetup();
+        document.getElementById('groups-setup-card').classList.remove('hidden');
+        renderGroupsConfig(pendingGroupsConfig.length);
+        updateCreateButtonText();
+      });
+      
+      // Reset calculator data (clear all inputs)
+      document.getElementById('reset-calculator-btn').addEventListener('click', ()=>{
+        if (confirm(t('reset_confirm'))) {
+          currentGroups.forEach(group => {
+            group.events.forEach(ev => {
+              ev.name = '';
+              ev.participants = 1;
+              ev.winners = 0;
+              ev.status = 'pending';
+            });
+          });
+          saveCurrentProfile();
+          renderCalculator();
+        }
+      });
+      
+      // Helper to attach export/import listeners
+      function setupExportImport(exportBtnId, importBtnId, fileInputId) {
+        document.getElementById(exportBtnId).addEventListener('click', exportProfile);
+        document.getElementById(importBtnId).addEventListener('click', ()=> document.getElementById(fileInputId).click());
+        document.getElementById(fileInputId).addEventListener('change', e => {
+          if (e.target.files[0]) { importProfile(e.target.files[0]); e.target.value = ''; }
+        });
+      }
+      setupExportImport('export-profile-setup', 'import-profile-setup', 'import-file-setup');
+      setupExportImport('export-profile-calc', 'import-profile-calc', 'import-file-calc');
+      
+      // Calculator event delegation
+      const groupsContainer = document.getElementById('groups-container');
+      groupsContainer.addEventListener('click', handleCalculatorClick);
+      groupsContainer.addEventListener('input', handleCalculatorInput);
+      
+      document.getElementById('add-group-calc').addEventListener('click', addNewGroup);
+      
+      // Mobile menu toggle
+      document.getElementById('mobile-menu-toggle').addEventListener('click', ()=>{
+        document.getElementById('actions-menu').classList.toggle('show');
+      });
+      
+      // Backup / restore all profiles
+      document.getElementById('backup-all-btn').addEventListener('click', backupAllProfiles);
+      document.getElementById('restore-backup-btn').addEventListener('click', ()=> document.getElementById('restore-backup-file').click());
+      document.getElementById('restore-backup-file').addEventListener('change', e => {
+        if (e.target.files[0]) { restoreBackup(e.target.files[0]); e.target.value = ''; }
+      });
+      
+      setupHotkeys();
+      setupSwipe();
+      
+      // Auto-save on page unload
+      window.addEventListener('beforeunload', e => {
+        if (currentProfile) saveCurrentProfile();
+      });
+    }
+
+    init();
+  })();
+</script>
+</body>
+</html>
