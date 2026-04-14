@@ -1,5 +1,5 @@
 [**🇷🇺 Читать на русском**](README_RU.md) 
-[![Open Calculator](https://img.shields.io/badge/Open_Calculator-38bdf8?style=for-the-badge)](https://soulintent.github.io/Probability-calculator/)
+
 <p align="center">
   <a href="https://soulintent.github.io/Probability-calculator/" target="_blank">
     <img src="https://img.shields.io/badge/Open_Calculator-38bdf8?style=for-the-badge" alt="Open Calculator">
