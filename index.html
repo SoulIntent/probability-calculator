@@ -570,6 +570,18 @@
       color: #0b1220;
     }
 
+    input[type="number"] {
+      height: 40px;
+      -moz-appearance: number-input;
+      appearance: textfield;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: inner-spin-button !important;
+      opacity: 1;
+      margin: 0;
+    }
+
     @media (max-width: 768px) {
       .container { padding: 16px 12px; }
       .header-actions { top: 16px; right: 16px; }
