@@ -334,7 +334,28 @@
       margin-top: 4px;
     }
 
+    .group-events-count-collapsed {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
     .group-next-chance {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
+    .group-total-chance {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
+    .group-events-count {
       font-size: 14px;
       font-weight: 500;
       color: var(--accent);
@@ -762,7 +783,8 @@
         invalid_filter_file: 'Invalid filter file.',
         wins_vs_expected: 'Wins vs Expected',
         next_chance_group: 'Next chance to win in this group:',
-        overall_chance: 'Overall chance to win at least onсe:'
+        overall_chance: 'Overall chance to win at least onсe:',
+        events_count_collapsed: 'Events:'
       },
       ru: {
         app_title: 'Калькулятор вероятностей',
@@ -854,7 +876,8 @@
         invalid_filter_file: 'Неверный файл фильтра.',
         wins_vs_expected: 'Победы / Ожидание',
         next_chance_group: 'Шанс выиграть в следующий раз в этой группе:',
-        overall_chance: 'Общий шанс выиграть хотя бы раз:'
+        overall_chance: 'Общий шанс выиграть хотя бы раз:',
+        events_count_collapsed: 'Событий:'
       }
     };
 
@@ -910,6 +933,7 @@
       currentProfile = name;
       const data = profiles[name];
       currentGroups = JSON.parse(JSON.stringify(data.groups || []));
+      currentGroups.forEach(g => { g.itemsCount = g.events.length; });
       collapsedGroups = new Set(data.collapsedGroups || []);
       document.getElementById('current-profile-name').textContent = name;
       return true;
@@ -1170,6 +1194,7 @@
       const winCount = group.events.filter(ev => ev.status === 'win').length;
       const nextChance = calcGroupNextChance(group);
       const eventCount = group.events.length;
+      const nonDefaultCount = group.events.filter(ev => ev.name.trim() !== '').length;
       const showScrollButtons = eventCount >= 10;
 
       card.innerHTML = `
@@ -1195,10 +1220,14 @@
         <div class="group-next-chance-collapsed" style="${isCollapsed ? '' : 'display:none;'}">
           ${t('next_chance_group')} ${formatPercent(nextChance)}%
         </div>
+        <div class="group-events-count-collapsed" style="${isCollapsed ? '' : 'display:none;'}">
+          ${t('events_count_collapsed')} ${nonDefaultCount}
+        </div>
         <div class="group-content" style="${isCollapsed ? 'display:none;' : ''}">
           <div class="events-list"></div>
           <div class="total group-total-chance">${t('group_expected_label')} <span>${winCount} / ${formatNumber(expected)}</span></div>
           <div class="total group-next-chance">${t('next_chance_group')} <span>${formatPercent(nextChance)}%</span></div>
+          <div class="total group-events-count">${t('events_count_collapsed')} ${nonDefaultCount}</div>
           <div class="group-actions">
             <button class="add-event-btn" data-group-idx="${gIdx}">${t('add_event')}</button>
           </div>
@@ -1274,12 +1303,17 @@
       const expected = calcGroupExpected(group);
       const winCount = group.events.filter(ev => ev.status === 'win').length;
       const nextChance = calcGroupNextChance(group);
+      const nonDefaultCount = group.events.filter(ev => ev.name.trim() !== '').length;
       const chanceSpan = card.querySelector('.group-total-chance span');
       if (chanceSpan) chanceSpan.textContent = `${winCount} / ${formatNumber(expected)}`;
       const collapsedSpan = card.querySelector('.group-chance-collapsed');
       if (collapsedSpan) collapsedSpan.textContent = `${t('group_expected_label')} ${winCount} / ${formatNumber(expected)}`;
       const nextCollapsedSpan = card.querySelector('.group-next-chance-collapsed');
       if (nextCollapsedSpan) nextCollapsedSpan.textContent = `${t('next_chance_group')} ${formatPercent(nextChance)}%`;
+      const eventsCountSpan = card.querySelector('.group-events-count-collapsed');
+      if (eventsCountSpan) eventsCountSpan.textContent = `${t('events_count_collapsed')} ${nonDefaultCount}`;
+      const eventsCountExpanded = card.querySelector('.group-events-count');
+      if (eventsCountExpanded) eventsCountExpanded.textContent = `${t('events_count_collapsed')} ${nonDefaultCount}`;
       const nextChanceSpan = card.querySelector('.group-next-chance span');
       if (nextChanceSpan) nextChanceSpan.textContent = `${formatPercent(nextChance)}%`;
       const eventsDiv = card.querySelector('.events-list');
@@ -1524,12 +1558,14 @@
         const content = card.querySelector('.group-content');
         const collapsedChance = card.querySelector('.group-chance-collapsed');
         const nextCollapsedChance = card.querySelector('.group-next-chance-collapsed');
+        const eventsCountCollapsed = card.querySelector('.group-events-count-collapsed');
         const headerScrollBtns = card.querySelectorAll('.group-header .scroll-group-btn');
         if (collapsedGroups.has(id)) {
           collapsedGroups.delete(id);
           content.style.display = '';
           collapsedChance.style.display = 'none';
           nextCollapsedChance.style.display = 'none';
+          eventsCountCollapsed.style.display = 'none';
           target.textContent = t('collapse');
           headerScrollBtns.forEach(btn => btn.style.display = '');
         } else {
@@ -1537,6 +1573,7 @@
           content.style.display = 'none';
           collapsedChance.style.display = '';
           nextCollapsedChance.style.display = '';
+          eventsCountCollapsed.style.display = '';
           target.textContent = t('expand');
           headerScrollBtns.forEach(btn => btn.style.display = 'none');
         }
@@ -1684,8 +1721,13 @@
       saveCurrentProfile();
       const expected = calcGroupExpected(group);
       const winCount = group.events.filter(ev => ev.status === 'win').length;
+      const nonDefaultCount = group.events.filter(ev => ev.name.trim() !== '').length;
       card.querySelector('.group-total-chance span').textContent = `${winCount} / ${formatNumber(expected)}`;
       card.querySelector('.group-chance-collapsed').textContent = `${t('group_expected_label')} ${winCount} / ${formatNumber(expected)}`;
+      const eventsCountSpan = card.querySelector('.group-events-count-collapsed');
+      if (eventsCountSpan) eventsCountSpan.textContent = `${t('events_count_collapsed')} ${nonDefaultCount}`;
+      const eventsCountExpanded = card.querySelector('.group-events-count');
+      if (eventsCountExpanded) eventsCountExpanded.textContent = `${t('events_count_collapsed')} ${nonDefaultCount}`;
       updateGlobalStats();
     }
 
@@ -2126,7 +2168,7 @@
       
       document.getElementById('back-to-setup').addEventListener('click', ()=>{
         if (currentProfile && profiles[currentProfile]) {
-          pendingGroupsConfig = currentGroups.map(g => ({ id: g.id, name: g.name, itemsCount: g.itemsCount }));
+          pendingGroupsConfig = currentGroups.map(g => ({ id: g.id, name: g.name, itemsCount: g.events.length }));
           document.getElementById('groups-count').value = pendingGroupsConfig.length;
         }
         showSetup();
