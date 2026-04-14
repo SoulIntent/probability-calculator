@@ -919,12 +919,23 @@
     function formatNumber(value) { return value.toFixed(2); }
     function calcTotalChance(probs) { return 1 - probs.reduce((prod, p) => prod * (1 - p), 1); }
 
+    function isFiltered(eventName) {
+      if (!eventName || filterSet.size === 0) return false;
+      return filterSet.has(eventName.trim());
+    }
+
+    function calcGroupExpected(group) {
+      return group.events
+        .filter(ev => ev.status === 'lose')
+        .reduce((sum, ev) => sum + (ev.participants > 0 ? ev.winners / ev.participants : 0), 0);
+    }
+
     function calcGroupNextChance(group) {
       let relevantProbs = [];
       for (const ev of group.events) {
         if (ev.status === 'win') {
           relevantProbs = [];
-        } else if (ev.status === 'lose' && !isFiltered(ev.name)) {
+        } else if (ev.status === 'lose') {
           const p = ev.participants > 0 ? ev.winners / ev.participants : 0;
           relevantProbs.push(p);
         }
@@ -1258,17 +1269,6 @@
       return isValid;
     }
 
-    function calcGroupExpected(group) {
-      return group.events
-        .filter(ev => ev.status === 'lose' && !isFiltered(ev.name))
-        .reduce((sum, ev) => sum + (ev.participants > 0 ? ev.winners / ev.participants : 0), 0);
-    }
-
-    function isFiltered(eventName) {
-      if (!eventName || filterSet.size === 0) return false;
-      return filterSet.has(eventName.trim());
-    }
-
     function updateGroupCard(card, group) {
       const gIdx = parseInt(card.dataset.groupIdx);
       const expected = calcGroupExpected(group);
@@ -1310,8 +1310,8 @@
         bottomBtn.title = t('scroll_to_bottom');
         bottomBtn.textContent = '⬇️';
         bottomBtn.style.display = isCollapsed ? 'none' : '';
-        headerDiv.insertBefore(bottomBtn, headerDiv.firstChild);
         headerDiv.insertBefore(topBtn, headerDiv.firstChild);
+        headerDiv.insertBefore(bottomBtn, headerDiv.firstChild);
         
         const contentDiv = card.querySelector('.group-content');
         const actionsDiv = card.querySelector('.group-actions');
@@ -1691,10 +1691,11 @@
 
     function updateGlobalStats() {
       const allEvents = currentGroups.flatMap(g => g.events);
-      const loseEvents = allEvents.filter(ev => ev.status === 'lose' && !isFiltered(ev.name));
-      const totalExpected = loseEvents.reduce((sum, ev) => sum + (ev.participants > 0 ? ev.winners / ev.participants : 0), 0);
+      const loseEvents = allEvents.filter(ev => ev.status === 'lose');
+      const filteredLoseEvents = loseEvents.filter(ev => !isFiltered(ev.name));
+      const totalExpected = filteredLoseEvents.reduce((sum, ev) => sum + (ev.participants > 0 ? ev.winners / ev.participants : 0), 0);
       const totalWins = allEvents.filter(ev => ev.status === 'win').length;
-      const totalLosses = allEvents.filter(ev => ev.status === 'lose').length;
+      const totalLosses = loseEvents.length;
       const pending = allEvents.filter(ev => ev.status === 'pending').length;
       const overallNextChance = calcOverallNextChance();
 
@@ -1703,7 +1704,6 @@
       consideredForTop.forEach(ev => {
         if (!ev.name.trim()) return;
         const key = ev.name.trim();
-        if (filterSet.has(key)) return;
         if (!nameMap.has(key)) nameMap.set(key, []);
         nameMap.get(key).push(ev.participants>0 ? ev.winners/ev.participants : 0);
       });
