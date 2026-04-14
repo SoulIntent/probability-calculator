@@ -373,6 +373,112 @@
       margin-left: auto;
     }
 
+    /* --- New styles for feature additions --- */
+    /* Drag handle for group reordering */
+    .drag-handle {
+      cursor: grab;
+      font-size: 24px;
+      padding: 0 8px;
+      color: var(--text-secondary);
+      user-select: none;
+    }
+    .drag-handle:active { cursor: grabbing; }
+
+    /* Make edit and delete group buttons same size as status buttons */
+    .edit-group-btn, .delete-group-btn {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      font-size: 18px;
+    }
+    .edit-group-btn:hover, .delete-group-btn:hover {
+      background: #38bdf826;
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* Scroll buttons inside group header */
+    .scroll-group-btn {
+      background: transparent;
+      border: 1px solid var(--border-light);
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      font-size: 18px;
+      border-radius: 8px;
+      margin-left: 4px;
+    }
+
+    /* Modal overlay for statistics */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: #00000080;
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 700px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px #00000059;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .modal-close {
+      background: transparent;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      padding: 0 8px;
+    }
+    .stats-section {
+      margin-bottom: 24px;
+    }
+    .stats-group-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 4px;
+    }
+    .stats-category {
+      margin-left: 12px;
+      margin-bottom: 12px;
+    }
+    .stats-category-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .stats-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--input-bg);
+      margin-bottom: 4px;
+    }
+
     /* Mobile layout fixes */
     @media (max-width: 768px) {
       .container { padding: 16px 12px; }
@@ -480,12 +586,18 @@
     <div id="groups-container"></div>
     <!-- Global statistics card -->
     <div class="card stats-card">
-      <div class="label" data-i18n="summary_statistics">Summary statistics</div>
+      <div class="label" style="display: flex; justify-content: space-between; align-items: center;">
+        <span data-i18n="summary_statistics">Summary statistics</span>
+        <button id="show-stats-modal-btn" data-i18n="stats_button">Stats</button>
+      </div>
       <div id="global-stats"></div>
     </div>
   </div>
   <!-- Footer -->
   <div class="footer-note">Made by Ch1cWolf<br>2026 ©</div>
+
+  <!-- Datalist for event name autocomplete -->
+  <datalist id="event-names-datalist"></datalist>
 </div>
 
 <script>
@@ -562,6 +674,16 @@
         delete_group_confirm: 'Delete group "{name}"? This action cannot be undone.',
         empty_group_name: 'Group name cannot be empty.',
         duplicate_group_name_exists: 'A group with this name already exists.',
+        stats_button: 'Stats',
+        statistics_title: 'Detailed Statistics',
+        win_section: 'Won',
+        pending_section: 'Pending',
+        lose_section: 'Lost',
+        participants_count: 'Participants',
+        close: 'Close',
+        scroll_to_top: 'Scroll to first event',
+        scroll_to_bottom: 'Scroll to last event',
+        drag_handle: 'Drag to reorder',
       },
       ru: {
         app_title: 'Калькулятор вероятностей',
@@ -597,7 +719,7 @@
         total_wins: 'Всего побед:',
         total_losses: 'Всего поражений:',
         pending_count: 'Ожидают:',
-        top_names: 'Лучшие шансы (в процесе/поражение):',
+        top_names: 'Лучшие шансы (в процессе/поражение):',
         event_name_placeholder: 'Название события',
         entries: 'Участников',
         winners: 'Победителей',
@@ -630,6 +752,16 @@
         delete_group_confirm: 'Удалить группу "{name}"? Это действие необратимо.',
         empty_group_name: 'Название группы не может быть пустым.',
         duplicate_group_name_exists: 'Группа с таким названием уже существует.',
+        stats_button: 'Статистика',
+        statistics_title: 'Детальная статистика',
+        win_section: 'Выиграно',
+        pending_section: 'В процессе',
+        lose_section: 'Проиграно',
+        participants_count: 'Участников',
+        close: 'Закрыть',
+        scroll_to_top: 'Прокрутить к первому событию',
+        scroll_to_bottom: 'Прокрутить к последнему событию',
+        drag_handle: 'Перетащите для изменения порядка',
       }
     };
 
@@ -808,6 +940,24 @@
       return new Set(names).size === names.length;
     }
 
+    /* ---------- Autocomplete for event names ---------- */
+    // Update datalist with all unique event names from current groups
+    function updateEventNamesDatalist() {
+      const datalist = document.getElementById('event-names-datalist');
+      datalist.innerHTML = '';
+      const namesSet = new Set();
+      currentGroups.forEach(group => {
+        group.events.forEach(ev => {
+          if (ev.name && ev.name.trim()) namesSet.add(ev.name.trim());
+        });
+      });
+      [...namesSet].sort().forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        datalist.appendChild(option);
+      });
+    }
+
     /* ---------- Calculator rendering ---------- */
     // Render all groups in the calculator view
     function renderCalculator() {
@@ -817,6 +967,7 @@
         const card = createGroupCard(group, gIdx);
         container.appendChild(card);
       });
+      updateEventNamesDatalist();
       updateGlobalStats();
     }
 
@@ -825,16 +976,27 @@
       const card = document.createElement('div');
       card.className = 'card';
       card.dataset.groupIdx = gIdx;
+      card.setAttribute('draggable', 'false');
       const isCollapsed = collapsedGroups.has(group.id);
       const groupChance = calcGroupTotalChance(group);
+      const eventCount = group.events.length;
+      const showScrollButtons = eventCount >= 10;
+
       card.innerHTML = `
         <div class="group-header">
-          <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:4px;">
+            <span class="drag-handle" title="${t('drag_handle')}">☰</span>
             <span class="group-name-text" style="font-size:1.2rem; font-weight:bold;">${group.name}</span>
             <button class="edit-group-btn" data-group-idx="${gIdx}" title="${t('edit')}">✏️</button>
             <button class="delete-group-btn" data-group-idx="${gIdx}" title="${t('delete')}">🗑️</button>
           </div>
-          <button class="collapse-btn" data-group-id="${group.id}">${isCollapsed ? t('expand') : t('collapse')}</button>
+          <div style="display:flex; align-items:center;">
+            ${showScrollButtons ? `
+              <button class="scroll-group-btn scroll-top-btn" data-group-idx="${gIdx}" title="${t('scroll_to_top')}">⬆️</button>
+              <button class="scroll-group-btn scroll-bottom-btn" data-group-idx="${gIdx}" title="${t('scroll_to_bottom')}">⬇️</button>
+            ` : ''}
+            <button class="collapse-btn" data-group-id="${group.id}">${isCollapsed ? t('expand') : t('collapse')}</button>
+          </div>
         </div>
         <div class="group-chance-collapsed" style="${isCollapsed ? '' : 'display:none;'}">
           ${t('group_chance_label')} ${formatPercent(groupChance)}%
@@ -851,6 +1013,11 @@
       group.events.forEach((ev, eIdx) => {
         eventsDiv.appendChild(createEventRow(ev, gIdx, eIdx));
       });
+      
+      // Attach drag handle functionality
+      const dragHandle = card.querySelector('.drag-handle');
+      dragHandle.addEventListener('mousedown', (e) => handleDragStart(e, card, gIdx));
+      
       return card;
     }
 
@@ -862,7 +1029,7 @@
       row.dataset.eventIdx = eIdx;
       const p = ev.participants > 0 ? ev.winners / ev.participants : 0;
       row.innerHTML = `
-        <input type="text" class="event-name" value="${ev.name}" placeholder="${t('event_name_placeholder')}">
+        <input type="text" class="event-name" value="${ev.name}" placeholder="${t('event_name_placeholder')}" list="event-names-datalist" autocomplete="off">
         <div style="display:flex; flex-direction:column; gap:2px;">
           <span class="number-label">${t('entries')}</span>
           <input type="number" class="event-number participants" value="${ev.participants}" min="1" placeholder="${t('entries')}">
@@ -911,6 +1078,25 @@
       const eventsDiv = card.querySelector('.events-list');
       eventsDiv.innerHTML = '';
       group.events.forEach((ev, eIdx) => eventsDiv.appendChild(createEventRow(ev, gIdx, eIdx)));
+      
+      // Update scroll buttons visibility
+      const headerDiv = card.querySelector('.group-header div:last-child');
+      const existingScrollBtns = headerDiv.querySelectorAll('.scroll-group-btn');
+      existingScrollBtns.forEach(btn => btn.remove());
+      if (group.events.length >= 10) {
+        const topBtn = document.createElement('button');
+        topBtn.className = 'scroll-group-btn scroll-top-btn';
+        topBtn.dataset.groupIdx = gIdx;
+        topBtn.title = t('scroll_to_top');
+        topBtn.textContent = '⬆️';
+        const bottomBtn = document.createElement('button');
+        bottomBtn.className = 'scroll-group-btn scroll-bottom-btn';
+        bottomBtn.dataset.groupIdx = gIdx;
+        bottomBtn.title = t('scroll_to_bottom');
+        bottomBtn.textContent = '⬇️';
+        headerDiv.insertBefore(bottomBtn, headerDiv.firstChild);
+        headerDiv.insertBefore(topBtn, headerDiv.firstChild);
+      }
     }
 
     // Update all group cards and global stats
@@ -919,11 +1105,108 @@
         const card = document.querySelector(`#groups-container .card[data-group-idx="${idx}"]`);
         if (card) updateGroupCard(card, group);
       });
+      updateEventNamesDatalist();
       updateGlobalStats();
     }
 
+    /* ---------- Drag and drop for group reordering ---------- */
+    let dragState = {
+      active: false,
+      startY: 0,
+      sourceCard: null,
+      sourceIdx: -1,
+      placeholder: null,
+      clone: null
+    };
+
+    function handleDragStart(e, card, idx) {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      const rect = card.getBoundingClientRect();
+      dragState.active = true;
+      dragState.startY = e.clientY;
+      dragState.sourceCard = card;
+      dragState.sourceIdx = idx;
+      
+      // Create clone for visual feedback
+      dragState.clone = card.cloneNode(true);
+      dragState.clone.classList.add('dragging-clone');
+      dragState.clone.style.position = 'fixed';
+      dragState.clone.style.width = rect.width + 'px';
+      dragState.clone.style.left = rect.left + 'px';
+      dragState.clone.style.top = rect.top + 'px';
+      dragState.clone.style.opacity = '0.7';
+      dragState.clone.style.zIndex = '1000';
+      dragState.clone.style.pointerEvents = 'none';
+      document.body.appendChild(dragState.clone);
+      
+      // Create placeholder
+      dragState.placeholder = document.createElement('div');
+      dragState.placeholder.className = 'card';
+      dragState.placeholder.style.background = 'var(--border-light)';
+      dragState.placeholder.style.opacity = '0.5';
+      dragState.placeholder.style.border = '2px dashed var(--accent)';
+      dragState.placeholder.style.height = rect.height + 'px';
+      card.parentNode.insertBefore(dragState.placeholder, card);
+      card.style.display = 'none';
+      
+      window.addEventListener('mousemove', handleDragMove);
+      window.addEventListener('mouseup', handleDragEnd);
+    }
+
+    function handleDragMove(e) {
+      if (!dragState.active) return;
+      e.preventDefault();
+      const clone = dragState.clone;
+      clone.style.top = (e.clientY - 20) + 'px';
+      
+      // Find card under mouse
+      const elements = document.elementsFromPoint(e.clientX, e.clientY);
+      const targetCard = elements.find(el => el.classList && el.classList.contains('card') && el !== dragState.sourceCard && el !== dragState.placeholder);
+      if (targetCard && targetCard.parentNode === dragState.sourceCard.parentNode) {
+        const targetIdx = parseInt(targetCard.dataset.groupIdx);
+        const placeholder = dragState.placeholder;
+        const container = document.getElementById('groups-container');
+        const children = [...container.children].filter(c => c.classList.contains('card') && c !== dragState.sourceCard);
+        const targetIndex = children.indexOf(targetCard);
+        const currentPlaceholderIndex = children.indexOf(placeholder);
+        if (currentPlaceholderIndex !== targetIndex) {
+          if (currentPlaceholderIndex < targetIndex) {
+            container.insertBefore(placeholder, targetCard.nextSibling);
+          } else {
+            container.insertBefore(placeholder, targetCard);
+          }
+        }
+      }
+    }
+
+    function handleDragEnd(e) {
+      if (!dragState.active) return;
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+      
+      const container = document.getElementById('groups-container');
+      const children = [...container.children].filter(c => c.classList.contains('card'));
+      const placeholderIdx = children.indexOf(dragState.placeholder);
+      
+      // Remove clone and placeholder
+      if (dragState.clone) dragState.clone.remove();
+      dragState.sourceCard.style.display = '';
+      dragState.placeholder.remove();
+      
+      // Reorder currentGroups array
+      if (placeholderIdx !== -1 && placeholderIdx !== dragState.sourceIdx) {
+        const movedGroup = currentGroups.splice(dragState.sourceIdx, 1)[0];
+        currentGroups.splice(placeholderIdx, 0, movedGroup);
+        saveCurrentProfile();
+        renderCalculator();
+      }
+      
+      dragState = { active: false };
+    }
+
     /* ---------- Event handling for calculator ---------- */
-    // Click handler for group cards (collapse, edit, delete, add event, status change)
+    // Click handler for group cards (collapse, edit, delete, add event, status change, scroll)
     function handleCalculatorClick(e) {
       const target = e.target;
       const card = target.closest('.card');
@@ -948,6 +1231,18 @@
           target.textContent = t('expand');
         }
         saveCurrentProfile();
+        return;
+      }
+
+      // Scroll to top / bottom of events
+      if (target.classList.contains('scroll-top-btn')) {
+        const eventsDiv = card.querySelector('.events-list');
+        if (eventsDiv.firstChild) eventsDiv.firstChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+      }
+      if (target.classList.contains('scroll-bottom-btn')) {
+        const eventsDiv = card.querySelector('.events-list');
+        if (eventsDiv.lastChild) eventsDiv.lastChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         return;
       }
 
@@ -1023,6 +1318,7 @@
         saveCurrentProfile();
         updateGroupCard(card, group);
         updateGlobalStats();
+        updateEventNamesDatalist();
         return;
       }
 
@@ -1037,6 +1333,7 @@
         saveCurrentProfile();
         updateGroupCard(card, group);
         updateGlobalStats();
+        updateEventNamesDatalist();
         return;
       }
 
@@ -1066,6 +1363,7 @@
       
       if (target.classList.contains('event-name')) {
         ev.name = target.value;
+        updateEventNamesDatalist(); // Update suggestions as user types
       } else {
         const field = target.classList.contains('participants') ? 'participants' : 'winners';
         let val = parseInt(target.value) || 0;
@@ -1120,12 +1418,59 @@
       `;
     }
 
+    // Show detailed statistics modal
+    function showStatsModal() {
+      // Build content grouped by groups in order
+      let html = `<div class="modal-content"><div class="modal-header"><h2>${t('statistics_title')}</h2><button class="modal-close">✖</button></div>`;
+      
+      currentGroups.forEach(group => {
+        const events = group.events;
+        const winEvents = events.filter(ev => ev.status === 'win');
+        const pendingEvents = events.filter(ev => ev.status === 'pending');
+        const loseEvents = events.filter(ev => ev.status === 'lose');
+        
+        // Sort each category by probability descending
+        const sortByProb = (a,b) => (b.participants>0 ? b.winners/b.participants : 0) - (a.participants>0 ? a.winners/a.participants : 0);
+        winEvents.sort(sortByProb);
+        pendingEvents.sort(sortByProb);
+        loseEvents.sort(sortByProb);
+        
+        html += `<div class="stats-section"><div class="stats-group-title">${group.name}</div>`;
+        
+        const renderCategory = (title, arr, categoryKey) => {
+          if (arr.length === 0) return '';
+          let catHtml = `<div class="stats-category"><div class="stats-category-title">${title}</div>`;
+          arr.forEach(ev => {
+            const prob = ev.participants>0 ? ev.winners/ev.participants : 0;
+            catHtml += `<div class="stats-item"><span>${ev.name || '—'}</span><span>${formatPercent(prob)}% (${ev.participants} ${t('participants_count').toLowerCase()})</span></div>`;
+          });
+          catHtml += `</div>`;
+          return catHtml;
+        };
+        
+        html += renderCategory(t('win_section'), winEvents);
+        html += renderCategory(t('pending_section'), pendingEvents);
+        html += renderCategory(t('lose_section'), loseEvents);
+        html += `</div>`;
+      });
+      
+      html += `</div>`;
+      
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = html;
+      document.body.appendChild(overlay);
+      
+      overlay.querySelector('.modal-close').addEventListener('click', () => overlay.remove());
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    }
+
     // Add a new group with default values
     function addNewGroup() {
-    // Check if adding this group would exceed 5 groups
-    if (currentGroups.length >= 5) {
-      if (!confirm(t('many_groups_warning'))) {
-        return;
+      // Check if adding this group would exceed 5 groups
+      if (currentGroups.length >= 5) {
+        if (!confirm(t('many_groups_warning'))) {
+          return;
         }
       }
       const newGroup = {
@@ -1167,6 +1512,7 @@
               saveCurrentProfile();
               updateGroupCard(card, group);
               updateGlobalStats();
+              updateEventNamesDatalist();
             }
           }
         }
@@ -1197,6 +1543,7 @@
           saveCurrentProfile();
           updateGroupCard(card, group);
           updateGlobalStats();
+          updateEventNamesDatalist();
         }
       });
     }
@@ -1466,6 +1813,9 @@
       document.getElementById('restore-backup-file').addEventListener('change', e => {
         if (e.target.files[0]) { restoreBackup(e.target.files[0]); e.target.value = ''; }
       });
+      
+      // Stats modal button
+      document.getElementById('show-stats-modal-btn').addEventListener('click', showStatsModal);
       
       setupHotkeys();
       setupSwipe();
