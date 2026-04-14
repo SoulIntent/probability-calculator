@@ -1,3 +1,5 @@
+[**🇷🇺 Читать на русском**](README_RU.md)
+
 # Probability Calculator
 
 **Purpose:**  
