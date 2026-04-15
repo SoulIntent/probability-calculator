@@ -1747,7 +1747,7 @@
       const allEvents = currentGroups.flatMap(g => g.events);
       const loseEvents = allEvents.filter(ev => ev.status === 'lose');
       const filteredLoseEvents = loseEvents.filter(ev => !isFiltered(ev.name));
-      const totalExpected = filteredLoseEvents.reduce((sum, ev) => sum + (ev.participants > 0 ? ev.winners / ev.participants : 0), 0);
+      const totalExpected = loseEvents.reduce((sum, ev) => sum + (ev.participants > 0 ? ev.winners / ev.participants : 0), 0);
       const totalWins = allEvents.filter(ev => ev.status === 'win').length;
       const totalLosses = loseEvents.length;
       const pending = allEvents.filter(ev => ev.status === 'pending').length;
